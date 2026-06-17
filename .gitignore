@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js build output
+.next/
+out/
+build/
+
+# Environment variables (Crucial for security!)
+.env
+.env*.local
+
+# Database (This is what caused your earlier lock error)
+backend/data/chroma_db/
+
+# OS files
+.DS_Store
+Thumbs.db
