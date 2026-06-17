@@ -6,15 +6,10 @@ from api.routes import health, chat, upload
 
 app = FastAPI(title="Hybrid RAG API")
 
-# Updated CORS to handle both localhost and production
-origins = [
-    "http://localhost:3000",
-    "https://your-production-app.vercel.app", # Replace with your actual Vercel domain
-]
-
+# Use the wildcard "*" to let your Vercel frontend connect without getting blocked
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins, 
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
