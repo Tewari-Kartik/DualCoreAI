@@ -25,5 +25,6 @@ async def startup():
 
 # This block allows the cloud provider to set the port dynamically
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
+    # Ensure this default matches the PORT variable in your Railway dashboard
+    port = int(os.environ.get("PORT", 8080))
     uvicorn.run("main:app", host="0.0.0.0", port=port)
