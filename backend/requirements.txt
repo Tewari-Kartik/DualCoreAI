@@ -35,3 +35,4 @@ numpy>=1.26.0
 
 fastapi
 uvicorn
+langchain-chroma
