@@ -14,9 +14,9 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 # Import for Autonomous Web Search
 from langchain_community.tools import DuckDuckGoSearchRun
 
-# IMPORTANT: Paste your actual Groq API key here
-os.environ["GROQ_API_KEY"] = "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"
-os.environ["TAVILY_API_KEY"] = "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"
+# At the top of chat.py — Railway injects these automatically
+groq_api_key = os.environ.get("GROQ_API_KEY")
+tavily_api_key = os.environ.get("TAVILY_API_KEY")
 
 router = APIRouter()
 
