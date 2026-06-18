@@ -1,22 +1,18 @@
 <div align="center">
-
 <br/>
-
-# 🧠 Hybrid RAG
-
+🧠 Hybrid RAG
 The world's smartest documents don't just sit there — they think back.
-
 <br/>
-![Live Demo](https://dual-core-7o7atvpgn-tewarikartik007-9205s-projects.vercel.app/)
-![FastAPI](https://fastapi.tiangolo.com/)
-![Next.js](https://nextjs.org/)
-![LangGraph](https://github.com/langchain-ai/langgraph)
-![Groq](https://groq.com/)
-![HuggingFace](https://huggingface.co/)
+![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Vercel-black?style=for-the-badge&logo=vercel)
+![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-black?style=for-the-badge&logo=next.js)
+![LangGraph](https://img.shields.io/badge/Agents-LangGraph-6366f1?style=for-the-badge)
+![Groq](https://img.shields.io/badge/LLM-Groq-F55036?style=for-the-badge)
+![HuggingFace](https://img.shields.io/badge/Embeddings-HuggingFace-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
 <br/>
-> \*\*Hybrid RAG\*\* is not just another chatbot over your documents.  
-> It is a fully autonomous reasoning system that dynamically chooses \*how\* to retrieve,  
-> \*reflects\* on whether it retrieved well enough, and \*synthesises\* answers from multiple sources —  
+> **Hybrid RAG** is not just another chatbot over your documents.  
+> It is a fully autonomous reasoning system that dynamically chooses *how* to retrieve,  
+> *reflects* on whether it retrieved well enough, and *synthesises* answers from multiple sources —  
 > all while remembering who you are and what you've asked before.
 <br/>
 </div>
@@ -57,11 +53,11 @@ Upload a PDF or DOCX, ask a question, and watch the system decide in real time w
 │                     │          │                             │
 │         ┌───────────▼──┐  ┌───▼──────────────┐             │
 │         │ Traditional  │  │   Vectorless RAG  │             │
-│         │     RAG      │  │  (Groq in-ctx)   │             │
-│         │              │  │                  │             │
-│         │ HF Embeddings│  │ Token-size guard │             │
-│         │ FAISS/Chroma │  │ Auto-route back  │             │
-│         │ BM25 + RRF   │  │ if too large     │             │
+│         │     RAG      │  │  (Groq in-ctx)    │             │
+│         │              │  │                   │             │
+│         │ HF Embeddings│  │ Token-size guard  │             │
+│         │ FAISS/Chroma │  │ Auto-route back   │             │
+│         │ BM25 + RRF   │  │ if too large      │             │
 │         └──────┬───────┘  └───────┬──────────┘             │
 │                └─────────┬────────┘                         │
 │                          │                                   │
@@ -86,7 +82,7 @@ Passes documents directly into Groq's long-context window (Mixtral 8x7b at 32k t
 ---
 🗂️ Project Structure
 ```
-hybrid\_rag/                        ← monorepo root
+hybrid_rag/                        ← monorepo root
 ├── .env
 ├── .gitignore
 ├── README.md
@@ -105,32 +101,32 @@ hybrid\_rag/                        ← monorepo root
 │   │       └── health.py          GET /api/health
 │   │
 │   ├── core/                      ← RAG pipelines
-│   │   ├── traditional\_rag.py     dense + sparse retrieval pipeline
-│   │   ├── vectorless\_rag.py      in-context Groq pipeline
-│   │   └── hybrid\_router.py       decides which pipeline to call
+│   │   ├── traditional_rag.py     dense + sparse retrieval pipeline
+│   │   ├── vectorless_rag.py      in-context Groq pipeline
+│   │   └── hybrid_router.py       decides which pipeline to call
 │   │
 │   ├── retrieval/                 ← search layer
 │   │   ├── embeddings.py          HuggingFace BGE embeddings
-│   │   ├── vector\_store.py        FAISS / ChromaDB wrapper
-│   │   ├── bm25\_retriever.py      sparse keyword search
-│   │   └── hybrid\_search.py       RRF fusion of dense + sparse
+│   │   ├── vector_store.py        FAISS / ChromaDB wrapper
+│   │   ├── bm25_retriever.py      sparse keyword search
+│   │   └── hybrid_search.py       RRF fusion of dense + sparse
 │   │
 │   ├── agents/                    ← autonomous reasoning
-│   │   ├── react\_agent.py         ReAct tool-use agent
-│   │   ├── langgraph\_flow.py      state machine / graph
-│   │   └── self\_reflection.py     CRAG-style grading + retry
+│   │   ├── react_agent.py         ReAct tool-use agent
+│   │   ├── langgraph_flow.py      state machine / graph
+│   │   └── self_reflection.py     CRAG-style grading + retry
 │   │
 │   ├── memory/                    ← persistence
-│   │   ├── short\_term.py          conversation buffer
-│   │   └── long\_term.py           vector-based episodic memory
+│   │   ├── short_term.py          conversation buffer
+│   │   └── long_term.py           vector-based episodic memory
 │   │
 │   ├── guardrails/
 │   │   └── gateway.py             input/output validation
 │   │
 │   └── data/                      auto-created at runtime
 │       ├── uploads/
-│       ├── vector\_store/
-│       └── chroma\_db/
+│       ├── vector_store/
+│       └── chroma_db/
 │
 └── frontend/                      ← Next.js 14  (runs on :3000)
     ├── package.json
@@ -176,7 +172,7 @@ A Groq API key (free tier available)
 A HuggingFace token
 1 — Clone
 ```bash
-git clone https://github.com/YOUR\_USERNAME/hybrid-rag.git
+git clone https://github.com/YOUR_USERNAME/hybrid-rag.git
 cd hybrid-rag
 ```
 2 — Backend
@@ -185,7 +181,7 @@ cd backend
 python -m venv venv
 
 # Windows
-venv\\Scripts\\activate
+venv\Scripts\activate
 # Mac / Linux
 source venv/bin/activate
 
@@ -196,8 +192,8 @@ Copy the example env file and fill in your keys:
 cp .env.example .env
 ```
 ```env
-GROQ\_API\_KEY=your\_groq\_api\_key
-HUGGINGFACE\_API\_TOKEN=your\_hf\_token
+GROQ_API_KEY=your_groq_api_key
+HUGGINGFACE_API_TOKEN=your_hf_token
 ```
 Start the API:
 ```bash
@@ -211,7 +207,7 @@ npm install
 ```
 ```bash
 # .env.local
-NEXT\_PUBLIC\_API\_URL=http://localhost:8000/api
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
 ```
 ```bash
 npm run dev
@@ -223,15 +219,15 @@ Method	Endpoint	Description
 `POST`	`/api/chat`	Send a message, get a RAG-grounded response
 `POST`	`/api/chat/stream`	Same but streaming (SSE)
 `POST`	`/api/upload`	Upload and index a document
-`GET`	`/api/memory/{session\_id}`	Retrieve conversation history
-`DELETE`	`/api/memory/{session\_id}`	Clear session memory
+`GET`	`/api/memory/{session_id}`	Retrieve conversation history
+`DELETE`	`/api/memory/{session_id}`	Clear session memory
 `GET`	`/api/health`	Service health check
 Example request
 ```bash
-curl -X POST http://localhost:8000/api/chat \\
-  -H "Content-Type: application/json" \\
+curl -X POST http://localhost:8000/api/chat \
+  -H "Content-Type: application/json" \
   -d '{
-    "session\_id": "abc-123",
+    "session_id": "abc-123",
     "message": "What are the key findings?",
     "mode": "auto"
   }'
@@ -239,22 +235,22 @@ curl -X POST http://localhost:8000/api/chat \\
 Example response
 ```json
 {
-  "session\_id": "abc-123",
+  "session_id": "abc-123",
   "answer": "The key findings include...",
-  "sources": \[
+  "sources": [
     {
       "id": "uuid",
       "content": "excerpt from document...",
-      "source\_file": "report.pdf",
+      "source_file": "report.pdf",
       "page": 4,
       "score": 0.94,
-      "retrieval\_method": "hybrid"
+      "retrieval_method": "hybrid"
     }
   ],
-  "rag\_mode\_used": "traditional",
-  "reflection\_loops": 2,
+  "rag_mode_used": "traditional",
+  "reflection_loops": 2,
   "confidence": 0.91,
-  "tokens\_used": 1024
+  "tokens_used": 1024
 }
 ```
 ---
@@ -284,5 +280,5 @@ MIT — see LICENSE for details.
 <div align="center">
 Built with 🧠 by Kartik Tewari
 If this project helped you, consider giving it a ⭐
-![Star on GitHub](https://github.com/Tewari-Kartik/DualCoreAI)
+![Star on GitHub](https://img.shields.io/github/stars/YOUR_USERNAME/hybrid-rag?style=social)
 </div>
