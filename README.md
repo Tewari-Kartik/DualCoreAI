@@ -1,284 +1,144 @@
-<div align="center">
-<br/>
-🧠 Hybrid RAG
-The world's smartest documents don't just sit there — they think back.
-<br/>
-![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Vercel-black?style=for-the-badge&logo=vercel)
-![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-black?style=for-the-badge&logo=next.js)
-![LangGraph](https://img.shields.io/badge/Agents-LangGraph-6366f1?style=for-the-badge)
-![Groq](https://img.shields.io/badge/LLM-Groq-F55036?style=for-the-badge)
-![HuggingFace](https://img.shields.io/badge/Embeddings-HuggingFace-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
-<br/>
-> **Hybrid RAG** is not just another chatbot over your documents.  
-> It is a fully autonomous reasoning system that dynamically chooses *how* to retrieve,  
-> *reflects* on whether it retrieved well enough, and *synthesises* answers from multiple sources —  
-> all while remembering who you are and what you've asked before.
-<br/>
-</div>
----
-✦ What makes this different
-Most RAG systems retrieve → generate. Done.  
-Hybrid RAG retrieves → grades → reflects → re-retrieves if needed → synthesises → responds.  
-And it does this across two fundamentally different retrieval architectures at once.
-Capability	Typical RAG	Hybrid RAG
-Dense vector search	✅	✅
-Sparse keyword search (BM25)	❌	✅
-Hybrid fusion (RRF)	❌	✅
-In-context retrieval (vectorless)	❌	✅
-Auto-routing between strategies	❌	✅
-Self-reflection + re-retrieval	❌	✅
-Chain-of-thought reasoning	❌	✅
-ReAct agent architecture	❌	✅
-Persistent memory (short + long term)	❌	✅
-Input / output guardrails	❌	✅
-Citation with confidence scores	❌	✅
----
-⚡ Live Demo
-→ Open Hybrid RAG
-Upload a PDF or DOCX, ask a question, and watch the system decide in real time whether to use dense retrieval, sparse retrieval, or direct in-context processing — and show you exactly which sources it used and how confident it is.
----
-🧠 Architecture
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Guardrails + LLM Gateway                  │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │               Query Enhancement Layer                  │  │
-│  │   HyDE · Step-back · Multi-query · Decomposition      │  │
-│  └────────────────────────┬──────────────────────────────┘  │
-│                           │                                  │
-│              ┌────────────▼────────────┐                    │
-│              │    ReAct Agent Router    │                    │
-│              └──────┬──────────┬───────┘                    │
-│                     │          │                             │
-│         ┌───────────▼──┐  ┌───▼──────────────┐             │
-│         │ Traditional  │  │   Vectorless RAG  │             │
-│         │     RAG      │  │  (Groq in-ctx)    │             │
-│         │              │  │                   │             │
-│         │ HF Embeddings│  │ Token-size guard  │             │
-│         │ FAISS/Chroma │  │ Auto-route back   │             │
-│         │ BM25 + RRF   │  │ if too large      │             │
-│         └──────┬───────┘  └───────┬──────────┘             │
-│                └─────────┬────────┘                         │
-│                          │                                   │
-│         ┌────────────────▼──────────────────────┐           │
-│         │       LangGraph Orchestration          │           │
-│         │  Self-reflection · CoT · Re-rank       │           │
-│         │  Multi-source synthesis · Grading      │           │
-│         └────────────────┬──────────────────────┘           │
-│                          │                                   │
-│              ┌───────────▼───────────┐                      │
-│              │   Answer Synthesis    │                      │
-│              │  Groq · Citations     │                      │
-│              │  Confidence scoring   │                      │
-│              └───────────────────────┘                      │
-└─────────────────────────────────────────────────────────────┘
-```
-The two RAG modes
-Traditional RAG — for large document corpora  
-Converts documents into dense vector embeddings using `BAAI/bge-large-en-v1.5`, stores them in FAISS, and runs hybrid search (dense + BM25 sparse) fused with Reciprocal Rank Fusion. Best for large collections where semantic similarity matters.
-Vectorless RAG — for small, sharp contexts  
-Passes documents directly into Groq's long-context window (Mixtral 8x7b at 32k tokens). No embedding, no indexing — just pure in-context reasoning. The system automatically routes to Traditional RAG when the token budget is exceeded.
----
-🗂️ Project Structure
-```
-hybrid_rag/                        ← monorepo root
-├── .env
-├── .gitignore
-├── README.md
-│
-├── backend/                       ← FastAPI  (runs on :8000)
-│   ├── main.py                    entry point, registers all routes
-│   ├── config.py                  all settings via pydantic + .env
-│   ├── requirements.txt
-│   │
-│   ├── api/
-│   │   ├── schemas.py             all request/response Pydantic models
-│   │   └── routes/
-│   │       ├── chat.py            POST /api/chat  +  /api/chat/stream
-│   │       ├── upload.py          POST /api/upload
-│   │       ├── memory.py          GET/DELETE /api/memory/{session}
-│   │       └── health.py          GET /api/health
-│   │
-│   ├── core/                      ← RAG pipelines
-│   │   ├── traditional_rag.py     dense + sparse retrieval pipeline
-│   │   ├── vectorless_rag.py      in-context Groq pipeline
-│   │   └── hybrid_router.py       decides which pipeline to call
-│   │
-│   ├── retrieval/                 ← search layer
-│   │   ├── embeddings.py          HuggingFace BGE embeddings
-│   │   ├── vector_store.py        FAISS / ChromaDB wrapper
-│   │   ├── bm25_retriever.py      sparse keyword search
-│   │   └── hybrid_search.py       RRF fusion of dense + sparse
-│   │
-│   ├── agents/                    ← autonomous reasoning
-│   │   ├── react_agent.py         ReAct tool-use agent
-│   │   ├── langgraph_flow.py      state machine / graph
-│   │   └── self_reflection.py     CRAG-style grading + retry
-│   │
-│   ├── memory/                    ← persistence
-│   │   ├── short_term.py          conversation buffer
-│   │   └── long_term.py           vector-based episodic memory
-│   │
-│   ├── guardrails/
-│   │   └── gateway.py             input/output validation
-│   │
-│   └── data/                      auto-created at runtime
-│       ├── uploads/
-│       ├── vector_store/
-│       └── chroma_db/
-│
-└── frontend/                      ← Next.js 14  (runs on :3000)
-    ├── package.json
-    ├── tailwind.config.ts
-    ├── tsconfig.json
-    ├── next.config.ts
-    └── src/
-        ├── app/
-        │   ├── layout.tsx         root layout, dark theme
-        │   ├── page.tsx           landing  →  /
-        │   ├── chat/page.tsx      chat UI  →  /chat
-        │   └── upload/page.tsx    uploads  →  /upload
-        ├── components/
-        │   ├── chat/              ChatWindow · MessageBubble · SourceCard · MemoryPanel
-        │   ├── upload/            DropZone · FileList
-        │   └── ui/                Sidebar · Button · Loader
-        ├── lib/api.ts             typed fetch client
-        ├── hooks/useChat.ts       chat state hook
-        └── types/index.ts         TypeScript types
-```
----
-🛠️ Tech Stack
-Layer	Technology
-LLM inference	Groq — LLaMA 3.3 70B · Mixtral 8x7b · LLaMA 3.1 8B
-Embeddings	HuggingFace — `BAAI/bge-large-en-v1.5`
-Vector store	FAISS (local) · ChromaDB (persistent)
-Sparse search	BM25 via `rank-bm25`
-Fusion	Reciprocal Rank Fusion (RRF)
-Agent framework	LangChain + LangGraph
-Query enhancement	HyDE · Step-back · Multi-query · Decomposition
-Self-reflection	CRAG-style document grading
-Memory	Short-term buffer + long-term vector episodic store
-Guardrails	Guardrails AI + NEMO Guardrails
-Backend	FastAPI + Uvicorn
-Frontend	Next.js 14 (App Router) + Tailwind CSS
-Deployment	Vercel (frontend)
----
-🚀 Getting Started
-Prerequisites
-Python 3.11+
-Node.js 18+
-A Groq API key (free tier available)
-A HuggingFace token
-1 — Clone
-```bash
-git clone https://github.com/YOUR_USERNAME/hybrid-rag.git
-cd hybrid-rag
-```
-2 — Backend
-```bash
-cd backend
-python -m venv venv
+# 🚀 Hybrid RAG Agentic Pipeline
 
-# Windows
-venv\Scripts\activate
-# Mac / Linux
-source venv/bin/activate
+A production-ready, full-stack **Hybrid Retrieval-Augmented Generation (RAG)** application. This architecture fuses dense vector retrieval with sparse keyword searching (BM25), managed dynamically via an autonomous routing and self-reflection system to deliver precise, context-grounded AI responses with live web-search failovers.
 
-pip install -r requirements.txt
-```
-Copy the example env file and fill in your keys:
-```bash
-cp .env.example .env
-```
-```env
-GROQ_API_KEY=your_groq_api_key
-HUGGINGFACE_API_TOKEN=your_hf_token
-```
-Start the API:
-```bash
-uvicorn main:app --reload --port 8000
-```
-API docs auto-available at http://localhost:8000/docs
-3 — Frontend
-```bash
-cd ../frontend
-npm install
-```
-```bash
-# .env.local
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
-```
-```bash
-npm run dev
-```
-Open http://localhost:3000 🎉
+🔗 **Live Application UI:** [Hybrid RAG on Vercel](https://dual-core-kqz2zzobs-tewarikartik007-9205s-projects.vercel.app/)
+
 ---
-🔌 API Reference
-Method	Endpoint	Description
-`POST`	`/api/chat`	Send a message, get a RAG-grounded response
-`POST`	`/api/chat/stream`	Same but streaming (SSE)
-`POST`	`/api/upload`	Upload and index a document
-`GET`	`/api/memory/{session_id}`	Retrieve conversation history
-`DELETE`	`/api/memory/{session_id}`	Clear session memory
-`GET`	`/api/health`	Service health check
-Example request
-```bash
-curl -X POST http://localhost:8000/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{
-    "session_id": "abc-123",
-    "message": "What are the key findings?",
-    "mode": "auto"
-  }'
+
+## 🏗️ System Architecture & Workflow
+
+The platform leverages an advanced orchestration engine designed to optimize retrieval accuracy and eliminate model hallucinations.
+
+```text
+[User Query] ──> [Query Rewriter] ──> [Hybrid Router]
+                                             │
+             ┌───────────────────────────────┴───────────────────────────────┐
+             ▼                                                               ▼
+   [Traditional RAG]                                                 [Vectorless RAG]
+  ├── Dense: HuggingFace BGE Embeddings                            └── In-Context Groq Pipeline
+  └── Sparse: BM25 Keyword Search
+             │
+             ▼
+   [Reciprocal Rank Fusion (RRF)] ──> [Self-Reflection Loop] ──> [Success] ──> [Response]
+                                             │
+                                      (If Hallucination / Missing Data)
+                                             │
+                                             ▼
+                               [Autonomous Tavily Web Search] ───────────────> [Response]
 ```
-Example response
-```json
-{
-  "session_id": "abc-123",
-  "answer": "The key findings include...",
-  "sources": [
-    {
-      "id": "uuid",
-      "content": "excerpt from document...",
-      "source_file": "report.pdf",
-      "page": 4,
-      "score": 0.94,
-      "retrieval_method": "hybrid"
-    }
-  ],
-  "rag_mode_used": "traditional",
-  "reflection_loops": 2,
-  "confidence": 0.91,
-  "tokens_used": 1024
-}
+
+1. **Query Optimization:** Raw user messages are intercepted by a LangChain-powered rewriter that factors in context history to generate optimized search terms.
+2. **Hybrid & Vectorless Routing:** Queries are dynamically executed via custom dense (FAISS/ChromaDB via HuggingFace BGE) and sparse (BM25) search indices, merged using Reciprocal Rank Fusion (RRF).
+3. **Self-Reflection Pipeline:** Generated outputs pass through an automated Corrective RAG (CRAG) grader. If the response reveals missing context or down-stream hallucinations, the engine bypasses local documents and triggers an autonomous live search fallback via **Tavily**.
+
+---
+
+## 📁 Repository Structure
+
+```text
+hybrid_rag/                        ── Monorepo Root
+├── .env                           ── Main Environment Configuration
+├── .gitignore                     ── Git Exclusions (.env, data directories)
+├── README.md                      ── Project Documentation
+│
+├── backend/                       ── FastAPI Application Backend (Port 8000)
+│   ├── main.py                    ── Entry Point & Core Route Registration
+│   ├── config.py                  ── Pydantic BaseSettings Interface
+│   ├── requirements.txt           ── Python Requirements Matrix
+│   │
+│   ├── api/                       ── App Interface Layers
+│   │   ├── schemas.py             ── Pydantic Validation Schemas
+│   │   └── routes/                ── API Endpoint Route Handlers (Chat, Upload, Memory)
+│   │
+│   ├── core/                      ── Orchestration Engine
+│   │   ├── traditional_rag.py     ── Dense + Sparse Index Pipelines
+│   │   ├── vectorless_rag.py      ── In-Context Groq Pipeline
+│   │   └── hybrid_router.py       ── Pipeline Decision Router
+│   │
+│   ├── retrieval/                 ── Vector & Keyword Indexes
+│   │   ├── embeddings.py          ── HuggingFace BGE Setup
+│   │   ├── vector_store.py        ── FAISS / ChromaDB Wrappers
+│   │   ├── bm25_retriever.py      ── Sparse Retrieval Core
+│   │   └── hybrid_search.py       ── RRF Combination Logic
+│   │
+│   ├── agents/                    ── Logic & Evaluation Layers
+│   │   ├── react_agent.py         ── ReAct Tool Execution Logic
+│   │   ├── langgraph_flow.py      ── State-Machine Graph Processing
+│   │   └── self_reflection.py     ── CRAG Validation & Grading Loops
+│   │
+│   └── data/                      ── Local Persistence Storage (Generated at Runtime)
+│       ├── uploads/               ── Source Document Files
+│       └── vector_store/          ── FAISS / Chroma DB Serializations
+│
+└── frontend/                      ── Next.js 14 Web UI App (Port 3000)
+    ├── package.json               ── Node Module Configuration
+    ├── src/
+        ├── app/                   ── Next.js App Router Structure (/, /chat, /upload)
+        ├── components/            ── UI & Chat Presentation Layer Components
+        ├── lib/                   ── Typed Fetch API Service Handler
+        └── hooks/                 ── Specialized Chat State & Management Hooks
 ```
+
 ---
-🗺️ Roadmap
-[x] Phase 1 — Project foundation, config, folder structure
-[x] Phase 1 — FastAPI backend with all route stubs
-[x] Phase 1 — Next.js frontend with chat + upload UI
-[ ] Phase 2 — HuggingFace embeddings + FAISS + BM25 + RRF hybrid search
-[ ] Phase 3 — Vectorless RAG with Groq + token-size auto-routing
-[ ] Phase 4 — Query enhancement (HyDE, step-back, multi-query, decomposition)
-[ ] Phase 5 — ReAct agent + LangGraph state machine
-[ ] Phase 6 — Self-reflection loop + chain-of-thought (CRAG-style)
-[ ] Phase 7 — Persistent short-term + long-term memory
-[ ] Phase 8 — Guardrails AI + NEMO input/output validation
+
+## ⚡ Quick Start & Installation
+
+### Backend Setup (FastAPI)
+
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Create and activate a Python virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Configure environment variables in a `.env` file within the `backend/` root directory:
+   ```env
+   GROQ_API_KEY=your_groq_api_key
+   TAVILY_API_KEY=your_tavily_api_key
+   PORT=8000
+   ```
+5. Spin up the development server:
+   ```bash
+   uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+### Frontend Setup (Next.js 14)
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd ../frontend
+   ```
+2. Install the necessary node packages:
+   ```bash
+   npm install
+   ```
+3. Configure the local environment values inside `.env.local`:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:8000/api
+   ```
+4. Start the localized Next.js development build:
+   ```bash
+   npm run dev
+   ```
+
 ---
-🤝 Contributing
-Pull requests are welcome. For major changes please open an issue first to discuss what you'd like to change.
-Fork the repo
-Create your branch: `git checkout -b feat/amazing-feature`
-Commit: `git commit -m 'add amazing feature'`
-Push: `git push origin feat/amazing-feature`
-Open a Pull Request
+
+## 🌐 Cloud Deployment Infrastructure
+
+* **Frontend Hosting:** [Vercel](https://vercel.com) — Configured with automated deployment webhooks synchronized with repository pushes.
+* **Backend Hosting:** [Railway](https://railway.app) — Packaged and run via optimized `railway.json` configurations using dynamic host-port binding mapping to production gateways.
+
 ---
-📄 License
-MIT — see LICENSE for details.
----
+
 <div align="center">
-Built with 🧠 by Kartik Tewari
-If this project helped you, consider giving it a ⭐
-![Star on GitHub](https://img.shields.io/github/stars/YOUR_USERNAME/hybrid-rag?style=social)
+  <b>Built with ❤️ by Kartik Tewari </b><br>
+  FastAPI • Next.js 14 • LangChain • HuggingFace • Groq • Tavily
 </div>
