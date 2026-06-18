@@ -1,10 +1,28 @@
 <div align="center">
-  <a href="https://dual-core-kqz2zzobs-tewarikartik007-9205s-projects.vercel.app/"><b>Live Demo</b></a> &nbsp;•&nbsp;
-  <a href="https://fastapi.tiangolo.com/">FastAPI</a> &nbsp;•&nbsp;
-  <a href="https://nextjs.org/">Next.js</a> &nbsp;•&nbsp;
-  <a href="https://github.com/langchain-ai/langgraph">LangGraph</a> &nbsp;•&nbsp;
-  <a href="https://groq.com/">Groq</a> &nbsp;•&nbsp;
-  <a href="https://huggingface.co/">HuggingFace</a>
+  <a href="https://dual-core-kqz2zzobs-tewarikartik007-9205s-projects.vercel.app/">
+    <img src="https://img.shields.io/badge/🟢_Live_Demo-10B981?style=for-the-badge" alt="Live Demo" />
+  </a>
+  <a href="https://fastapi.tiangolo.com/">
+    <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI" />
+  </a>
+  <a href="https://nextjs.org/">
+    <img src="https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+  </a>
+  <a href="https://github.com/langchain-ai/langgraph">
+    <img src="https://img.shields.io/badge/LangGraph-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white" alt="LangGraph" />
+  </a>
+  <a href="https://huggingface.co/">
+    <img src="https://img.shields.io/badge/HuggingFace-F9AB00?style=for-the-badge&logo=huggingface&logoColor=white" alt="HuggingFace" />
+  </a>
+  <a href="https://groq.com/">
+    <img src="https://img.shields.io/badge/Groq-f55036?style=for-the-badge" alt="Groq" />
+  </a>
+  <a href="https://railway.app/">
+    <img src="https://img.shields.io/badge/Railway-131415?style=for-the-badge&logo=railway&logoColor=white" alt="Railway" />
+  </a>
+  <a href="https://vercel.com/">
+    <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
+  </a>
 </div>
 
 <br/>
