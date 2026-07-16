@@ -23,7 +23,7 @@ export default function ChatWindow({ sessionId }: { sessionId: string }) {
     const trimmed = input.trim()
     if (!trimmed || isThinking) return
 
-    const userMessage: Message = { id: crypto.randomUUID(), role: "user", content: trimmed }
+    const userMessage: Message = { id: crypto.randomUUID(), role: "user", content: trimmed, timestamp: new Date().toISOString() }
     setMessages((prev) => [...prev, userMessage])
     setInput("")
     setIsThinking(true)
@@ -35,6 +35,7 @@ export default function ChatWindow({ sessionId }: { sessionId: string }) {
         role: "assistant",
         content: data.answer,
         sources: data.sources ?? [],
+        timestamp: new Date().toISOString(),
       }
       setMessages((prev) => [...prev, assistantMessage])
     } catch (err) {
