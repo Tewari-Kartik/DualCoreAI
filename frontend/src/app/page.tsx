@@ -1,4 +1,10 @@
+"use client"
+
+import { useEffect, useRef } from "react"
 import Link from "next/link"
+import { motion } from "motion/react"
+import { gsap } from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import {
   type LucideIcon,
   MessageSquare,
@@ -7,13 +13,17 @@ import {
   GitMerge,
   RotateCw,
   Database,
-  Search,
   Zap,
   Target,
   Brain,
   Layers,
   CheckCircle2,
 } from "lucide-react"
+import { AnimatedBackground } from "../components/ui/animated-background"
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger)
+}
 
 function HybridMark() {
   return (
@@ -55,7 +65,13 @@ function StageCardWide({
   accent: string
 }) {
   return (
-    <div className="flex w-full max-w-[500px] items-center gap-4 rounded-xl border border-[#1C2230] bg-[#0D1117] px-5 py-4 transition-colors hover:border-[#2C3545]">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      className="glass-card glow-violet flex w-full max-w-[500px] items-center gap-4 rounded-xl px-5 py-4 transition-shadow duration-300 hover:-translate-y-0.5"
+    >
       <Icon className="h-5 w-5 shrink-0" style={{ color: accent }} />
       <div>
         <p className="font-mono-jb text-[10px] font-medium uppercase tracking-[0.14em]" style={{ color: accent }}>
@@ -63,14 +79,43 @@ function StageCardWide({
         </p>
         <p className="mt-1 text-xs leading-relaxed text-[#4A5568]">{desc}</p>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
-function Connector() {
+/** GSAP-driven connector: the vertical line draws itself in as it scrolls into view. */
+function Connector({ index }: { index: number }) {
+  const lineRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!lineRef.current) return
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        lineRef.current,
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          transformOrigin: "top",
+          duration: 0.6,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: lineRef.current,
+            start: "top 90%",
+          },
+        }
+      )
+    })
+    return () => ctx.revert()
+  }, [])
+
   return (
     <div className="relative flex flex-col items-center" style={{ height: 22 }}>
-      <div className="w-px flex-1" style={{ background: "linear-gradient(to bottom, #232A35, #3A4455)" }} />
+      <div
+        ref={lineRef}
+        className="w-px flex-1"
+        style={{ background: "linear-gradient(to bottom, #232A35, #3A4455)" }}
+        data-connector-index={index}
+      />
       <div
         className="absolute bottom-0 h-[6px] w-[6px] border-b border-r border-[#3A4455]"
         style={{ transform: "translateX(-50%) rotate(45deg)", left: "50%", bottom: -3 }}
@@ -88,12 +133,9 @@ const COMPARISON = [
     tint: "rgba(63,201,181,0.08)",
     border: "rgba(63,201,181,0.2)",
     headline: "Dense vector search",
-    blurb: "Embeds your query and documents into a shared vector space, then retrieves by cosine similarity — capturing meaning, paraphrase, and context.",
-    points: [
-      "Understands synonyms & intent",
-      "Strong on conceptual questions",
-      "Needs an embedding model + vector store",
-    ],
+    blurb:
+      "Embeds your query and documents into a shared vector space, then retrieves by cosine similarity — capturing meaning, paraphrase, and context.",
+    points: ["Understands synonyms & intent", "Strong on conceptual questions", "Needs an embedding model + vector store"],
     weakness: "Can miss exact terms, codes, and rare tokens.",
   },
   {
@@ -104,12 +146,9 @@ const COMPARISON = [
     tint: "rgba(232,163,61,0.08)",
     border: "rgba(232,163,61,0.22)",
     headline: "Lexical BM25 scoring",
-    blurb: "Ranks documents by exact term frequency and rarity — no embeddings required. Fast, transparent, and precise for keyword-heavy queries.",
-    points: [
-      "Pinpoints exact keywords & IDs",
-      "Zero embedding cost or latency",
-      "Fully explainable ranking",
-    ],
+    blurb:
+      "Ranks documents by exact term frequency and rarity — no embeddings required. Fast, transparent, and precise for keyword-heavy queries.",
+    points: ["Pinpoints exact keywords & IDs", "Zero embedding cost or latency", "Fully explainable ranking"],
     weakness: "Blind to synonyms and semantic paraphrase.",
   },
 ] as const
@@ -126,6 +165,16 @@ const FEATURES = [
   { icon: Layers, title: "Persistent memory", desc: "Context and prior answers carry across every session.", accent: "#E8A33D" },
 ]
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+}
+
+const staggerContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+}
+
 export default function Home() {
   return (
     <main
@@ -138,7 +187,55 @@ export default function Home() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         .font-mono-jb { font-family: 'JetBrains Mono', monospace; }
         .font-inter { font-family: 'Inter', sans-serif; }
+
+        .glass-card {
+          position: relative;
+          background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%), #0D1117;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+        }
+        .glass-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(157,124,255,0.25), rgba(63,201,181,0.12) 50%, rgba(255,255,255,0.04));
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+        .glow-teal:hover { box-shadow: 0 0 0 1px rgba(63,201,181,0.15), 0 8px 32px -8px rgba(63,201,181,0.25); }
+        .glow-violet:hover { box-shadow: 0 0 0 1px rgba(157,124,255,0.18), 0 8px 32px -8px rgba(157,124,255,0.3); }
+        .glow-amber:hover { box-shadow: 0 0 0 1px rgba(232,163,61,0.15), 0 8px 32px -8px rgba(232,163,61,0.25); }
+
+        .noise-overlay {
+          background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+          mix-blend-mode: overlay;
+        }
       `,
+        }}
+      />
+
+      {/* film grain texture — adds material weight instead of flat digital color */}
+      <div className="noise-overlay pointer-events-none absolute inset-0 z-[1] opacity-[0.04]" />
+
+      {/* layered gradient mesh — replaces the single flat glow with real depth */}
+      <div
+        className="pointer-events-none absolute"
+        style={{
+          width: 700, height: 700, borderRadius: "50%", top: -260, left: "8%",
+          background: "radial-gradient(circle, rgba(63,201,181,0.10) 0%, transparent 65%)",
+          animation: "auroraB 14s ease-in-out infinite", filter: "blur(10px)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute"
+        style={{
+          width: 640, height: 640, borderRadius: "50%", top: -160, right: "-10%",
+          background: "radial-gradient(circle, rgba(232,163,61,0.08) 0%, transparent 65%)",
+          animation: "auroraA 18s ease-in-out infinite", filter: "blur(10px)",
         }}
       />
 
@@ -152,23 +249,38 @@ export default function Home() {
         }}
       />
 
-      {/* hero radial glow */}
+      {/* hero radial glow — layered for actual depth instead of one flat blob */}
       <div
         className="pointer-events-none absolute"
         style={{
-          width: 600,
-          height: 600,
-          borderRadius: "50%",
-          top: -180,
-          left: "50%",
+          width: 780, height: 780, borderRadius: "50%", top: -280, left: "50%",
           transform: "translateX(-50%)",
-          background: "radial-gradient(circle, rgba(157,124,255,0.07) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(157,124,255,0.10) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute"
+        style={{
+          width: 420, height: 420, borderRadius: "50%", top: -120, left: "50%",
+          transform: "translateX(-50%)",
+          background: "radial-gradient(circle, rgba(157,124,255,0.14) 0%, transparent 60%)",
+          filter: "blur(4px)",
         }}
       />
 
+      {/* three.js ambient particle field — depth behind the hero only */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[640px]">
+        <AnimatedBackground />
+      </div>
+
       <div className="relative z-10 mx-auto flex max-w-3xl flex-col gap-14 px-6 py-8">
         {/* ── top bar ── */}
-        <header className="flex items-center justify-between">
+        <motion.header
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex items-center justify-between"
+        >
           <div className="flex items-center gap-2.5">
             <HybridMark />
             <span className="font-mono-jb text-[13px] tracking-[0.08em] text-[#5A6472]">hybrid-rag</span>
@@ -189,23 +301,33 @@ export default function Home() {
             </span>
             localhost:8000
           </div>
-        </header>
+        </motion.header>
 
         {/* ── hero ── */}
-        <section className="flex flex-col items-center gap-4 text-center">
-          <div
+        <motion.section
+          initial="hidden"
+          animate="show"
+          variants={staggerContainer}
+          className="flex flex-col items-center gap-4 text-center"
+        >
+          <motion.div
+            variants={fadeUp}
+            transition={{ duration: 0.45 }}
             className="font-mono-jb text-[11px] uppercase tracking-[0.16em] text-[#9D7CFF]"
             style={{
-              background: "rgba(157,124,255,0.08)",
-              border: "0.5px solid rgba(157,124,255,0.2)",
+              background: "linear-gradient(180deg, rgba(157,124,255,0.12), rgba(157,124,255,0.04))",
+              border: "0.5px solid rgba(157,124,255,0.25)",
+              boxShadow: "0 0 24px -8px rgba(157,124,255,0.4)",
               borderRadius: 20,
               padding: "5px 14px",
             }}
           >
             Retrieval-Augmented Generation
-          </div>
+          </motion.div>
 
-          <h1
+          <motion.h1
+            variants={fadeUp}
+            transition={{ duration: 0.5 }}
             className="font-inter font-semibold leading-[1.1] tracking-[-0.03em] text-[#EEF1F6]"
             style={{ fontSize: "clamp(36px, 6vw, 48px)" }}
           >
@@ -220,15 +342,15 @@ export default function Home() {
             >
               precision &amp; depth
             </span>
-          </h1>
+          </motion.h1>
 
-          <p className="max-w-[500px] text-base leading-[1.75] text-[#6B7A8D]">
+          <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="max-w-[500px] text-base leading-[1.75] text-[#6B7A8D]">
             Ask questions over your own documents. Every query runs two retrieval strategies in parallel, fused and
             reasoned over by an agent, and remembered across sessions.
-          </p>
+          </motion.p>
 
           {/* stats strip */}
-          <div className="mt-2 flex items-center gap-8">
+          <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="mt-2 flex items-center gap-8">
             {STATS.map((s) => (
               <div key={s.label} className="flex flex-col items-center">
                 <span className="font-inter text-2xl font-semibold" style={{ color: s.accent }}>
@@ -239,25 +361,40 @@ export default function Home() {
                 </span>
               </div>
             ))}
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
 
         {/* ── traditional vs vectorless comparison ── */}
         <section className="flex flex-col gap-5">
-          <div className="flex flex-col items-center gap-1.5 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col items-center gap-1.5 text-center"
+          >
             <p className="font-mono-jb text-[10px] uppercase tracking-[0.18em] text-[#3A4455]">two engines, one answer</p>
             <h2 className="font-inter text-xl font-semibold tracking-[-0.02em] text-[#DEE4EE]">
               Traditional vs. Vectorless retrieval
             </h2>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+          >
             {COMPARISON.map((c) => {
               const Icon = c.icon
               return (
-                <div
+                <motion.div
                   key={c.key}
-                  className="flex flex-col gap-4 rounded-2xl border border-[#1C2230] bg-[#0D1117] p-5 transition-colors hover:border-[#2C3545]"
+                  variants={fadeUp}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ y: -3 }}
+                  className={`glass-card ${c.key === "traditional" ? "glow-teal" : "glow-amber"} flex flex-col gap-4 rounded-2xl p-5 transition-shadow duration-300`}
                 >
                   <div className="flex items-center justify-between">
                     <span
@@ -301,34 +438,41 @@ export default function Home() {
                     <span className="font-mono-jb uppercase tracking-[0.1em] text-[#3A4455]">trade-off · </span>
                     {c.weakness}
                   </p>
-                </div>
+                </motion.div>
               )
             })}
-          </div>
+          </motion.div>
 
           {/* fusion banner */}
-          <div
-            className="flex items-center gap-3 rounded-xl px-5 py-4"
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="glass-card flex items-center gap-3 rounded-xl px-5 py-4"
             style={{
-              background: "linear-gradient(90deg, rgba(63,201,181,0.06), rgba(157,124,255,0.06))",
-              border: "0.5px solid #1C2230",
+              background:
+                "linear-gradient(90deg, rgba(63,201,181,0.09), rgba(157,124,255,0.09)), linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)), #0D1117",
             }}
           >
             <Zap className="h-5 w-5 shrink-0 text-[#9D7CFF]" />
             <p className="text-[13px] leading-relaxed text-[#8995A6]">
               <span className="font-medium text-[#DEE4EE]">Hybrid</span> runs both, then fuses results with{" "}
-              <span className="font-mono-jb text-[#3FC9B5]">reciprocal rank fusion</span> — keeping lexical precision and
-              semantic recall in a single ranked context.
+              <span className="font-mono-jb text-[#3FC9B5]">reciprocal rank fusion</span> — keeping lexical precision
+              and semantic recall in a single ranked context.
             </p>
-          </div>
+          </motion.div>
         </section>
 
         {/* ── architecture flow ── */}
         <div className="flex flex-col items-center gap-0">
           <p className="mb-2.5 font-mono-jb text-[10px] uppercase tracking-[0.18em] text-[#3A4455]">how a query flows</p>
 
-          {/* query chip */}
-          <div
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.35 }}
             className="flex items-center gap-2 font-mono-jb text-[12px] text-[#8995A6]"
             style={{
               background: "rgba(255,255,255,0.03)",
@@ -339,14 +483,21 @@ export default function Home() {
           >
             <span className="text-[#9D7CFF]">›_</span>
             your question
-          </div>
+          </motion.div>
 
-          <Connector />
+          <Connector index={0} />
 
           <p className="mb-2.5 font-mono-jb text-[10px] uppercase tracking-[0.18em] text-[#3A4455]">dual retrieval</p>
 
           {/* split grid */}
-          <div className="relative grid w-full max-w-[500px] grid-cols-2 gap-2.5" style={{ paddingTop: 22 }}>
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={staggerContainer}
+            className="relative grid w-full max-w-[500px] grid-cols-2 gap-2.5"
+            style={{ paddingTop: 22 }}
+          >
             <div
               className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2"
               style={{
@@ -359,24 +510,26 @@ export default function Home() {
               }}
             />
 
-            {/* lexical */}
-            <div className="flex flex-col gap-2 rounded-xl border border-[#1C2230] bg-[#0D1117] p-4 transition-colors hover:border-[#2C3545]">
+            <motion.div
+              variants={fadeUp}
+              transition={{ duration: 0.35 }}
+              className="glass-card glow-amber flex flex-col gap-2 rounded-xl p-4 transition-shadow duration-300"
+            >
               <Hash className="h-[18px] w-[18px] text-[#E8A33D]" />
               <p className="font-mono-jb text-[10px] font-medium uppercase tracking-[0.14em] text-[#E8A33D]">Lexical</p>
-              <p className="text-[11px] leading-relaxed text-[#4A5568]">
-                Exact keyword match using BM25 scoring for precision
-              </p>
-            </div>
+              <p className="text-[11px] leading-relaxed text-[#4A5568]">Exact keyword match using BM25 scoring for precision</p>
+            </motion.div>
 
-            {/* semantic */}
-            <div className="flex flex-col gap-2 rounded-xl border border-[#1C2230] bg-[#0D1117] p-4 transition-colors hover:border-[#2C3545]">
+            <motion.div
+              variants={fadeUp}
+              transition={{ duration: 0.35 }}
+              className="glass-card glow-teal flex flex-col gap-2 rounded-xl p-4 transition-shadow duration-300"
+            >
               <SemanticIcon className="h-[18px] w-[18px] text-[#3FC9B5]" />
               <p className="font-mono-jb text-[10px] font-medium uppercase tracking-[0.14em] text-[#3FC9B5]">Semantic</p>
-              <p className="text-[11px] leading-relaxed text-[#4A5568]">
-                Vector embedding search for contextual meaning
-              </p>
-            </div>
-          </div>
+              <p className="text-[11px] leading-relaxed text-[#4A5568]">Vector embedding search for contextual meaning</p>
+            </motion.div>
+          </motion.div>
 
           {/* bottom bracket + merge */}
           <div className="relative flex w-full max-w-[500px] flex-col items-center" style={{ paddingTop: 22 }}>
@@ -391,74 +544,78 @@ export default function Home() {
                 borderRadius: "0 0 4px 4px",
               }}
             />
-            <StageCardWide
-              icon={GitMerge}
-              title="Merge & re-rank"
-              desc="Reciprocal rank fusion — best of both, unified"
-              accent="#8995A6"
-            />
+            <StageCardWide icon={GitMerge} title="Merge & re-rank" desc="Reciprocal rank fusion — best of both, unified" accent="#8995A6" />
           </div>
 
-          <Connector />
-          <StageCardWide
-            icon={RotateCw}
-            title="Agent loop"
-            desc="Reasons, reflects, and iterates until confident in the answer"
-            accent="#9D7CFF"
-          />
+          <Connector index={1} />
+          <StageCardWide icon={RotateCw} title="Agent loop" desc="Reasons, reflects, and iterates until confident in the answer" accent="#9D7CFF" />
 
-          <Connector />
-          <StageCardWide
-            icon={Database}
-            title="Memory"
-            desc="Answers and reasoning persist across all sessions"
-            accent="#9D7CFF"
-          />
+          <Connector index={2} />
+          <StageCardWide icon={Database} title="Memory" desc="Answers and reasoning persist across all sessions" accent="#9D7CFF" />
         </div>
 
         {/* ── feature highlights ── */}
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <motion.section
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={staggerContainer}
+          className="grid grid-cols-1 gap-4 sm:grid-cols-3"
+        >
           {FEATURES.map((f) => {
             const Icon = f.icon
             return (
-              <div
+              <motion.div
                 key={f.title}
-                className="flex flex-col gap-3 rounded-2xl border border-[#1C2230] bg-[#0D1117] p-5 transition-colors hover:border-[#2C3545]"
+                variants={fadeUp}
+                transition={{ duration: 0.4 }}
+                whileHover={{ y: -3 }}
+                className="glass-card glow-violet flex flex-col gap-3 rounded-2xl p-5 transition-shadow duration-300"
               >
                 <Icon className="h-5 w-5" style={{ color: f.accent }} />
                 <p className="font-inter text-[14px] font-medium text-[#DEE4EE]">{f.title}</p>
                 <p className="text-[12px] leading-relaxed text-[#4A5568]">{f.desc}</p>
-              </div>
+              </motion.div>
             )
           })}
-        </section>
+        </motion.section>
 
         {/* ── action cards ── */}
-        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-          <Link
-            href="/chat"
-            className="group flex flex-col gap-3 rounded-2xl border border-[#1C2230] bg-[#0D1117] p-6 transition-all hover:-translate-y-0.5 hover:border-[rgba(157,124,255,0.35)] hover:bg-[#0F1318]"
-          >
-            <span className="font-mono-jb text-[10px] tracking-[0.14em] text-[#9D7CFF]">$ chat</span>
-            <MessageSquare className="h-6 w-6 text-[#9D7CFF] transition-transform group-hover:scale-110" />
-            <div>
-              <p className="font-inter text-[17px] font-medium text-[#DEE4EE]">Chat</p>
-              <p className="mt-1 text-[13px] text-[#4A5568]">Ask questions over your documents</p>
-            </div>
-          </Link>
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-60px" }}
+          variants={staggerContainer}
+          className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2"
+        >
+          <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
+            <Link
+              href="/chat"
+              className="glass-card glow-violet group flex flex-col gap-3 rounded-2xl p-6 transition-all hover:-translate-y-0.5"
+            >
+              <span className="font-mono-jb text-[10px] tracking-[0.14em] text-[#9D7CFF]">$ chat</span>
+              <MessageSquare className="h-6 w-6 text-[#9D7CFF] transition-transform group-hover:scale-110" />
+              <div>
+                <p className="font-inter text-[17px] font-medium text-[#DEE4EE]">Chat</p>
+                <p className="mt-1 text-[13px] text-[#4A5568]">Ask questions over your documents</p>
+              </div>
+            </Link>
+          </motion.div>
 
-          <Link
-            href="/upload"
-            className="group flex flex-col gap-3 rounded-2xl border border-[#1C2230] bg-[#0D1117] p-6 transition-all hover:-translate-y-0.5 hover:border-[rgba(63,201,181,0.35)] hover:bg-[#0F1318]"
-          >
-            <span className="font-mono-jb text-[10px] tracking-[0.14em] text-[#3FC9B5]">$ upload</span>
-            <Upload className="h-6 w-6 text-[#3FC9B5] transition-transform group-hover:scale-110" />
-            <div>
-              <p className="font-inter text-[17px] font-medium text-[#DEE4EE]">Upload</p>
-              <p className="mt-1 text-[13px] text-[#4A5568]">Index PDFs, DOCX, or plain text</p>
-            </div>
-          </Link>
-        </div>
+          <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
+            <Link
+              href="/upload"
+              className="glass-card glow-teal group flex flex-col gap-3 rounded-2xl p-6 transition-all hover:-translate-y-0.5"
+            >
+              <span className="font-mono-jb text-[10px] tracking-[0.14em] text-[#3FC9B5]">$ upload</span>
+              <Upload className="h-6 w-6 text-[#3FC9B5] transition-transform group-hover:scale-110" />
+              <div>
+                <p className="font-inter text-[17px] font-medium text-[#DEE4EE]">Upload</p>
+                <p className="mt-1 text-[13px] text-[#4A5568]">Index PDFs, DOCX, or plain text</p>
+              </div>
+            </Link>
+          </motion.div>
+        </motion.div>
 
         {/* ── footer ── */}
         <footer

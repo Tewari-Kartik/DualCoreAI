@@ -1,3 +1,7 @@
+"use client"
+
+import { motion } from "framer-motion"
+import { Sparkles } from "lucide-react"
 import type { Message } from "../../types"
 import SourceCard from "./SourceCard"
 
@@ -5,31 +9,48 @@ export default function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === "user"
 
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[85%] rounded-2xl px-5 py-4 shadow-sm ${
-        isUser 
-          ? "bg-violet-600 text-white" 
-          : "bg-zinc-900 text-zinc-100 border border-zinc-800"
-      }`}>
-        {/* The main message text */}
-        <div className="whitespace-pre-wrap leading-relaxed text-[15px]">
-          {message.content}
-        </div>
-
-        {/* The Source Cards (Only shows up if the AI used documents) */}
-        {!isUser && message.sources && message.sources.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-zinc-800 flex flex-col gap-2">
-            <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">
-              Sources Retrieved
-            </span>
-            <div className="grid grid-cols-1 gap-2">
-              {message.sources.map((source) => (
-                <SourceCard key={source.id} source={source} />
-              ))}
-            </div>
-          </div>
+    <motion.div
+      initial={{ opacity: 0, y: 12, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+    >
+      <div className={`flex max-w-[85%] gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+        {!isUser && (
+          <span
+            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+            style={{
+              background: "rgba(157,124,255,0.1)",
+              border: "0.5px solid rgba(157,124,255,0.25)",
+            }}
+          >
+            <Sparkles className="h-3.5 w-3.5 text-accent-violet" />
+          </span>
         )}
+
+        <div
+          className={`rounded-2xl px-5 py-4 ${
+            isUser
+              ? "bg-accent-violet/90 text-white"
+              : "border border-border bg-surface text-ink-muted"
+          }`}
+        >
+          <div className="whitespace-pre-wrap text-[15px] leading-relaxed">{message.content}</div>
+
+          {!isUser && message.sources && message.sources.length > 0 && (
+            <div className="mt-4 flex flex-col gap-2 border-t border-border-faint pt-4">
+              <span className="font-mono-jb text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+                Sources retrieved · {message.sources.length}
+              </span>
+              <div className="grid grid-cols-1 gap-2">
+                {message.sources.map((source, i) => (
+                  <SourceCard key={source.id} source={source} index={i} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

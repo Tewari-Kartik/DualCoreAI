@@ -1,18 +1,22 @@
+"use client"
+
+import { motion } from "framer-motion"
 import { FileText } from "lucide-react"
 import type { Source } from "../../types"
 
-export default function SourceCard({ source }: { source: Source }) {
+export default function SourceCard({ source, index = 0 }: { source: Source; index?: number }) {
   return (
-    <div className="flex gap-3 items-start bg-zinc-950 p-3 rounded-lg border border-zinc-800/50 hover:border-violet-500/50 transition-colors">
-      <FileText className="w-4 h-4 text-violet-400 shrink-0 mt-0.5" />
-      <div>
-        <p className="text-sm font-medium text-zinc-300">
-          {source.source_file}
-        </p>
-        <p className="text-xs text-zinc-500 line-clamp-2 mt-1">
-          {source.content}
-        </p>
+    <motion.div
+      initial={{ opacity: 0, x: -6 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.25, delay: index * 0.06, ease: "easeOut" }}
+      className="group flex items-start gap-3 rounded-lg border border-border-faint bg-canvas p-3 transition-colors hover:border-[rgba(63,201,181,0.35)]"
+    >
+      <FileText className="mt-0.5 h-4 w-4 shrink-0 text-accent-teal transition-transform group-hover:scale-110" />
+      <div className="min-w-0">
+        <p className="font-mono-jb text-[11px] tracking-tight text-ink-soft">{source.source_file}</p>
+        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-faint">{source.content}</p>
       </div>
-    </div>
+    </motion.div>
   )
 }

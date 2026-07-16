@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import SmoothScrollProvider from "../lib/smooth-scroll-provider"
 // @ts-ignore
 import "./globals.css"
 
@@ -14,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${inter.className} bg-zinc-950 text-zinc-100 antialiased min-h-screen`}>
-        {children}
+        <SmoothScrollProvider>{children}</SmoothScrollProvider>
       </body>
     </html>
   )
