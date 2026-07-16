@@ -45,3 +45,12 @@ export interface UploadResponse {
   status: "indexed" | "in-context"
   message: string
 }
+
+export type UploadStatus = "pending" | "processing" | "indexed" | "failed"
+
+export interface UploadedFile {
+  id: string
+  name: string
+  status: UploadStatus
+  error?: string
+}

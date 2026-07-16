@@ -43,6 +43,7 @@ export default function ChatWindow({ sessionId }: { sessionId: string }) {
         id: crypto.randomUUID(),
         role: "assistant",
         content: err instanceof Error ? `Couldn't reach the retrieval engine: ${err.message}` : "Something went wrong.",
+        timestamp: new Date(),
       }
       setMessages((prev) => [...prev, failMessage])
     } finally {
