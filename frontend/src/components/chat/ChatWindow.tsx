@@ -29,7 +29,7 @@ export default function ChatWindow({ sessionId }: { sessionId: string }) {
     setIsThinking(true)
 
     try {
-      const { data } = await api.post("/chat", { session_id: sessionId, message: trimmed })
+      const data: any = await api.chat(sessionId, trimmed)
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
