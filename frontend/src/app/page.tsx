@@ -18,6 +18,10 @@ import {
   Brain,
   Layers,
   CheckCircle2,
+  Activity,
+  Globe,
+  Shield,
+  RefreshCw as RefreshIcon,
 } from "lucide-react"
 import { AnimatedBackground } from "../components/ui/animated-background"
 
@@ -580,13 +584,63 @@ export default function Home() {
           })}
         </motion.section>
 
+        {/* ── agentic ai capabilities ── */}
+        <section className="flex flex-col gap-5">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col items-center gap-1.5 text-center"
+          >
+            <p className="font-mono-jb text-[10px] uppercase tracking-[0.18em] text-[#3A4455]">autonomous intelligence</p>
+            <h2 className="font-inter text-xl font-semibold tracking-[-0.02em] text-[#DEE4EE]">
+              Agentic AI Capabilities
+            </h2>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+          >
+            {[
+              { icon: Brain, title: "Query Rewriting", desc: "Analyzes conversation history to craft optimized, standalone search queries that capture true intent.", accent: "#9D7CFF" },
+              { icon: Shield, title: "Self-Reflection", desc: "An internal supervisor evaluates each answer for hallucinations and relevance, re-generating if needed.", accent: "#34d399" },
+              { icon: Globe, title: "Web Search Fallback", desc: "When documents don't have the answer, the agent autonomously searches the web via Tavily.", accent: "#f97316" },
+              { icon: RefreshIcon, title: "Auto-Improvement", desc: "Detects low-confidence answers and re-queries with rewritten prompts until quality passes.", accent: "#f59e0b" },
+            ].map((item) => {
+              const Icon = item.icon
+              return (
+                <motion.div
+                  key={item.title}
+                  variants={fadeUp}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ y: -3 }}
+                  className="flex items-start gap-4 rounded-xl border border-[#1C2230] bg-[#0D1117] p-5 transition-colors hover:border-[#2C3545]"
+                >
+                  <div className="mt-0.5 rounded-lg p-2" style={{ background: `${item.accent}12`, border: `0.5px solid ${item.accent}30` }}>
+                    <Icon className="h-4 w-4" style={{ color: item.accent }} />
+                  </div>
+                  <div>
+                    <p className="font-inter text-[14px] font-medium text-[#DEE4EE]">{item.title}</p>
+                    <p className="mt-1 text-[12px] leading-relaxed text-[#4A5568]">{item.desc}</p>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        </section>
+
         {/* ── action cards ── */}
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-60px" }}
           variants={staggerContainer}
-          className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2"
+          className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3"
         >
           <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
             <Link
@@ -612,6 +666,20 @@ export default function Home() {
               <div>
                 <p className="font-inter text-[17px] font-medium text-[#DEE4EE]">Upload</p>
                 <p className="mt-1 text-[13px] text-[#4A5568]">Index PDFs, DOCX, or plain text</p>
+              </div>
+            </Link>
+          </motion.div>
+
+          <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
+            <Link
+              href="/dashboard"
+              className="glass-card group flex flex-col gap-3 rounded-2xl p-6 transition-all hover:-translate-y-0.5 hover:border-[rgba(245,158,11,0.35)]"
+            >
+              <span className="font-mono-jb text-[10px] tracking-[0.14em] text-[#f59e0b]">$ dashboard</span>
+              <Activity className="h-6 w-6 text-[#f59e0b] transition-transform group-hover:scale-110" />
+              <div>
+                <p className="font-inter text-[17px] font-medium text-[#DEE4EE]">Dashboard</p>
+                <p className="mt-1 text-[13px] text-[#4A5568]">View agent reasoning traces</p>
               </div>
             </Link>
           </motion.div>

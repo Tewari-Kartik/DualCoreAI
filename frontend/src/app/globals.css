@@ -15,8 +15,8 @@ html.lenis {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -27,6 +27,34 @@ html.lenis {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
+}
+
+/* Glassmorphism card */
+.glass-card {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  ), #0D1117;
+  border: 0.5px solid #1C2230;
+  backdrop-filter: blur(12px);
+}
+.glass-card:hover {
+  border-color: #2C3545;
+}
+
+/* Glow variants */
+.glow-violet:hover {
+  border-color: rgba(157, 124, 255, 0.35);
+  box-shadow: 0 0 20px rgba(157, 124, 255, 0.06);
+}
+.glow-teal:hover {
+  border-color: rgba(63, 201, 181, 0.35);
+  box-shadow: 0 0 20px rgba(63, 201, 181, 0.06);
+}
+.glow-amber:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.06);
 }
 
 @keyframes fadeIn {
@@ -47,6 +75,17 @@ html.lenis {
 @keyframes auroraB {
   0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.85; }
   50%      { transform: translate(40px, -20px) scale(1.1); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

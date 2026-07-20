@@ -1,5 +1,5 @@
 export type RetrievalMethod = "dense" | "sparse" | "hybrid" | "in-context"
-export type RAGMode = "traditional" | "vectorless"
+export type RAGMode = "traditional" | "vectorless" | "hybrid"
 export type ChatMode = "auto" | "traditional" | "vectorless"
 
 export interface Source {
@@ -22,17 +22,18 @@ export interface Message {
   role: "user" | "assistant"
   content: string
   sources?: Source[]
-  rag_mode_used?: RAGMode
+  rag_mode_used?: string
   reflection_loops?: number
   confidence?: number
   timestamp: Date
+  agentEvents?: AgentEvent[]
 }
 
 export interface ChatResponse {
   session_id: string
   answer: string
   sources: Source[]
-  rag_mode_used: RAGMode
+  rag_mode_used: string
   reflection_loops: number
   confidence: number
   tokens_used: number
@@ -53,4 +54,42 @@ export interface UploadedFile {
   name: string
   status: UploadStatus
   error?: string
+}
+
+// --- Agent Event Types ---
+
+export type AgentEventType =
+  | "thinking"
+  | "rewriting"
+  | "searching"
+  | "sources"
+  | "generating"
+  | "reflecting"
+  | "web_search"
+  | "improving"
+  | "done"
+  | "error"
+
+export interface AgentEvent {
+  event: AgentEventType
+  data: Record<string, any>
+  timestamp: number
+}
+
+export interface AgentTrace {
+  session_id: string
+  duration_ms: number
+  events: AgentEvent[]
+  event_count: number
+}
+
+export interface AgentLogsResponse {
+  session_id: string
+  traces: AgentTrace[]
+  count: number
+}
+
+export interface SessionListResponse {
+  sessions: string[]
+  count: number
 }
