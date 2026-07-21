@@ -171,7 +171,7 @@ export default function ChatPage() {
       <AnimatedBackground />
 
       {/* Main chat column */}
-      <div className="z-10 flex flex-1 flex-col">
+      <div className="z-10 flex min-h-0 flex-1 flex-col">
         {/* Header */}
         <header className="z-20 flex flex-shrink-0 items-center justify-between border-b border-zinc-800/50 bg-[#0a0a0c]/70 px-4 py-3 backdrop-blur-xl sm:px-6">
           <div className="flex items-center gap-3">
@@ -247,7 +247,7 @@ export default function ChatPage() {
         </header>
 
         {/* Chat Area */}
-        <div className="flex-1 overflow-y-auto px-4 py-8 scroll-smooth">
+        <div className="flex-1 overflow-y-auto px-4 py-8 scroll-smooth" data-lenis-prevent="true">
           <div className="mx-auto max-w-3xl space-y-6">
             {/* Empty State */}
             <AnimatePresence>
@@ -420,7 +420,7 @@ export default function ChatPage() {
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="hidden flex-shrink-0 overflow-hidden border-l border-zinc-800/50 bg-[#0a0a0c]/90 backdrop-blur-xl lg:block"
           >
-            <div className="flex h-full w-[320px] flex-col overflow-y-auto p-5">
+            <div className="flex h-full w-[320px] flex-col overflow-y-auto p-5" data-lenis-prevent="true">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Brain className="h-4 w-4 text-purple-400" />

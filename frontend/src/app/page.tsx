@@ -281,35 +281,7 @@ export default function Home() {
         <AnimatedBackground />
       </div>
 
-      <div className="relative z-10 mx-auto flex max-w-3xl flex-col gap-14 px-6 py-8">
-        {/* ── top bar ── */}
-        <motion.header
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="flex items-center justify-between"
-        >
-          <div className="flex items-center gap-2.5">
-            <HybridMark />
-            <span className="font-mono-jb text-[13px] tracking-[0.08em] text-[#5A6472]">hybrid-rag</span>
-          </div>
-
-          <div
-            className="flex items-center gap-2 font-mono-jb text-[11px] text-[#5A6472]"
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "0.5px solid #1C2230",
-              borderRadius: 20,
-              padding: "5px 12px",
-            }}
-          >
-            <span className="relative flex h-[7px] w-[7px]">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#3FC9B5] opacity-75" />
-              <span className="relative inline-flex h-[7px] w-[7px] rounded-full bg-[#3FC9B5]" />
-            </span>
-            localhost:8000
-          </div>
-        </motion.header>
+      <div className="relative z-10 mx-auto flex max-w-3xl flex-col gap-14 px-6 pt-32 pb-8">
 
         {/* ── hero ── */}
         <motion.section
