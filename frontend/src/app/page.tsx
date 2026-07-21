@@ -158,8 +158,9 @@ const COMPARISON = [
 ] as const
 
 const STATS = [
-  { value: "2×", label: "retrieval strategies", accent: "#9D7CFF" },
+  { value: "2×", label: "retrieval engines", accent: "#9D7CFF" },
   { value: "RRF", label: "rank fusion", accent: "#3FC9B5" },
+  { value: "4", label: "AI agents", accent: "#f59e0b" },
   { value: "∞", label: "session memory", accent: "#E8A33D" },
 ]
 
@@ -167,6 +168,9 @@ const FEATURES = [
   { icon: Target, title: "Precision + recall", desc: "Lexical exactness fused with semantic breadth in every answer.", accent: "#3FC9B5" },
   { icon: Brain, title: "Agentic reasoning", desc: "An agent reflects and re-queries until the answer is grounded.", accent: "#9D7CFF" },
   { icon: Layers, title: "Persistent memory", desc: "Context and prior answers carry across every session.", accent: "#E8A33D" },
+  { icon: Globe, title: "Web search fallback", desc: "When docs lack answers, the agent autonomously searches the live web.", accent: "#f97316" },
+  { icon: Shield, title: "Hallucination guard", desc: "Self-reflection checks every answer for factual grounding before delivery.", accent: "#34d399" },
+  { icon: Activity, title: "Agent dashboard", desc: "Full transparency — inspect every reasoning step the AI took.", accent: "#f59e0b" },
 ]
 
 const fadeUp = {
@@ -229,17 +233,17 @@ export default function Home() {
       <div
         className="pointer-events-none absolute"
         style={{
-          width: 700, height: 700, borderRadius: "50%", top: -260, left: "8%",
-          background: "radial-gradient(circle, rgba(63,201,181,0.10) 0%, transparent 65%)",
-          animation: "auroraB 14s ease-in-out infinite", filter: "blur(10px)",
+          width: 900, height: 900, borderRadius: "50%", top: -320, left: "5%",
+          background: "radial-gradient(circle, rgba(63,201,181,0.14) 0%, transparent 60%)",
+          animation: "auroraB 14s ease-in-out infinite", filter: "blur(20px)",
         }}
       />
       <div
         className="pointer-events-none absolute"
         style={{
-          width: 640, height: 640, borderRadius: "50%", top: -160, right: "-10%",
-          background: "radial-gradient(circle, rgba(232,163,61,0.08) 0%, transparent 65%)",
-          animation: "auroraA 18s ease-in-out infinite", filter: "blur(10px)",
+          width: 800, height: 800, borderRadius: "50%", top: -200, right: "-12%",
+          background: "radial-gradient(circle, rgba(232,163,61,0.10) 0%, transparent 60%)",
+          animation: "auroraA 18s ease-in-out infinite", filter: "blur(20px)",
         }}
       />
 
@@ -257,23 +261,23 @@ export default function Home() {
       <div
         className="pointer-events-none absolute"
         style={{
-          width: 780, height: 780, borderRadius: "50%", top: -280, left: "50%",
+          width: 900, height: 900, borderRadius: "50%", top: -340, left: "50%",
           transform: "translateX(-50%)",
-          background: "radial-gradient(circle, rgba(157,124,255,0.10) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(157,124,255,0.14) 0%, transparent 65%)",
         }}
       />
       <div
         className="pointer-events-none absolute"
         style={{
-          width: 420, height: 420, borderRadius: "50%", top: -120, left: "50%",
+          width: 500, height: 500, borderRadius: "50%", top: -140, left: "50%",
           transform: "translateX(-50%)",
-          background: "radial-gradient(circle, rgba(157,124,255,0.14) 0%, transparent 60%)",
-          filter: "blur(4px)",
+          background: "radial-gradient(circle, rgba(157,124,255,0.18) 0%, transparent 55%)",
+          filter: "blur(6px)",
         }}
       />
 
       {/* three.js ambient particle field — depth behind the hero only */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[640px]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[800px]">
         <AnimatedBackground />
       </div>
 
@@ -348,9 +352,9 @@ export default function Home() {
             </span>
           </motion.h1>
 
-          <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="max-w-[500px] text-base leading-[1.75] text-[#6B7A8D]">
-            Ask questions over your own documents. Every query runs two retrieval strategies in parallel, fused and
-            reasoned over by an agent, and remembered across sessions.
+          <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="max-w-[540px] text-[15px] leading-[1.75] text-[#6B7A8D]">
+            Upload your documents and ask questions. Every query runs dual retrieval engines in parallel,
+            fused with Reciprocal Rank Fusion, verified by a self-reflecting AI agent, and remembered across sessions.
           </motion.p>
 
           {/* stats strip */}
@@ -564,7 +568,7 @@ export default function Home() {
           whileInView="show"
           viewport={{ once: true, margin: "-80px" }}
           variants={staggerContainer}
-          className="grid grid-cols-1 gap-4 sm:grid-cols-3"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
           {FEATURES.map((f) => {
             const Icon = f.icon

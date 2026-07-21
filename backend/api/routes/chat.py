@@ -97,7 +97,7 @@ def _run_agentic_pipeline(req: ChatRequest, collector: AgentEventCollector):
     # 5. AGENTIC STEP: Self-Reflection Loop
     collector.generating("Generating answer with LLM...")
 
-    max_retries = 2
+    max_retries = 1
     reflection_loops = 0
     is_good_answer = False
     final_answer = ""
@@ -164,7 +164,15 @@ def _run_agentic_pipeline(req: ChatRequest, collector: AgentEventCollector):
     chat_histories[req.session_id].append(HumanMessage(content=req.message))
     chat_histories[req.session_id].append(AIMessage(content=final_answer))
 
-    confidence = 0.95 if is_good_answer else 0.40
+    # Smart confidence scoring
+    if is_good_answer:
+        confidence = 0.95
+    elif "tavily_search" in mode_used:
+        confidence = 0.78  # web search found an answer
+    elif reflection_loops > 0:
+        confidence = 0.65  # had to re-generate but got something
+    else:
+        confidence = 0.50
 
     collector.done(
         answer=final_answer,
@@ -249,7 +257,7 @@ async def chat_stream_endpoint(req: ChatRequest):
             # Step 4: Generation + reflection loop
             yield collector.generating("Generating answer with LLM...").to_sse()
 
-            max_retries = 2
+            max_retries = 1
             reflection_loops = 0
             is_good_answer = False
             final_answer = ""
@@ -308,7 +316,15 @@ async def chat_stream_endpoint(req: ChatRequest):
             chat_histories[req.session_id].append(HumanMessage(content=req.message))
             chat_histories[req.session_id].append(AIMessage(content=final_answer))
 
-            confidence = 0.95 if is_good_answer else 0.40
+            # Smart confidence scoring
+            if is_good_answer:
+                confidence = 0.95
+            elif "tavily_search" in mode_used:
+                confidence = 0.78
+            elif reflection_loops > 0:
+                confidence = 0.65
+            else:
+                confidence = 0.50
 
             yield collector.done(
                 answer=final_answer, mode_used=mode_used,

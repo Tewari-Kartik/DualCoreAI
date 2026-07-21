@@ -11,14 +11,19 @@ def check_hallucination_and_relevance(question: str, context: str, answer: str) 
     grader_llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
     
     # Inside backend/agents/self_reflection.py
-    grading_prompt = f"""You are a helpful judge. Evaluate if the AI answer is supported by the context.
+    grading_prompt = f"""You are a lenient but fair quality judge. Your job is to check if the AI answer is reasonable given the context.
     User Question: {question}
     Retrieved Context: {context}
     AI Answer: {answer}
 
-    If the answer is factually supported by the context, reply "YES". 
-    If the answer is a blatant fabrication, reply "NO".
-    If the answer is generally correct but slightly wordy or misses a minor detail, reply "YES".
+    Rules:
+    - Reply "YES" if the answer is factually supported by the context.
+    - Reply "YES" if the answer is generally correct, even if it adds minor common-sense elaboration.
+    - Reply "YES" if the answer is slightly verbose but not wrong.
+    - Reply "YES" if the answer uses different wording but conveys the same meaning.
+    - Reply "NO" ONLY if the answer contains clear factual fabrications that contradict the context.
+    
+    Default to "YES" when in doubt. Reply with ONLY "YES" or "NO".
     """
     
     print("Evaluating answer quality...")
