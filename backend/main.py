@@ -1,6 +1,10 @@
 import os
 import socket
 
+# Sanitize API keys to remove accidental trailing newlines (fixes httpcore.LocalProtocolError)
+if "GROQ_API_KEY" in os.environ:
+    os.environ["GROQ_API_KEY"] = os.environ["GROQ_API_KEY"].strip()
+
 # Monkeypatch socket.getaddrinfo to force IPv4 (AF_INET) resolution globally.
 # This prevents httpx APIConnectionErrors in Docker environments where IPv6 routing is broken.
 old_getaddrinfo = socket.getaddrinfo
