@@ -53,15 +53,19 @@ def analyze_query(current_message: str, chat_history: list) -> QueryAnalysisResu
         role = "User" if msg.__class__.__name__ == "HumanMessage" else "Assistant"
         history_str += f"{role}: {msg.content}\n"
 
-    prompt = f"""You are an expert search query optimizer. Given the following conversation history and a new user message, rewrite the message into a standalone, concise keyword search query optimized for a document database.
+    prompt = f"""You are an expert search query optimizer for a RAG system.
+Given the following conversation history and a new user message, rewrite the message into a standalone, concise keyword search query.
+
+CRITICAL RULES:
+1. If the new user message is a COMPLETELY NEW TOPIC unrelated to the history, IGNORE the history entirely and just output keywords for the new message.
+2. DO NOT use complex boolean syntax (AND, OR, parentheses). Just output natural keywords.
+3. Output ONLY the optimized search query. Do not include introductory text, quotes, or explanations.
     
     CONVERSATION HISTORY:
     {history_str}
     
     LATEST USER MESSAGE:
     {current_message}
-    
-    Output ONLY the optimized search query. Do not include introductory text, quotes, or explanations.
     """
 
     print("  [Query Analyst] Rewriting query based on conversation context...")
