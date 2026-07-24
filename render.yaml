@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: hybridrag-backend
+    env: docker
+    region: oregon
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: PYTHONUNBUFFERED
+        value: "true"
