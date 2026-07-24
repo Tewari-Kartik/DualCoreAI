@@ -90,7 +90,7 @@ async def chat_stream_endpoint(req: ChatRequest):
             store_agent_log(req.session_id, collector.to_log_entry())
 
         except Exception as e:
-            yield collector.error(message=repr(e)).to_sse()
+            yield collector.error(message=repr(e) + "\n\n" + __import__("traceback").format_exc()).to_sse()
 
     return StreamingResponse(
         event_generator(),
