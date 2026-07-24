@@ -13,10 +13,14 @@ import {
   Loader2,
   AlertCircle,
   Zap,
+  ShieldCheck,
 } from "lucide-react"
-import type { AgentEvent } from "../../types"
+import type { AgentEvent, AgentInfo } from "../../types"
 
 const STEP_CONFIG: Record<string, { icon: any; label: string; color: string; glow: string }> = {
+  orchestrating: { icon: Brain,        label: "Orchestrating",      color: "#9D7CFF", glow: "shadow-purple-500/20" },
+  delegating:  { icon: Brain,        label: "Delegating Task",    color: "#9D7CFF", glow: "shadow-purple-500/20" },
+  critique:    { icon: ShieldCheck,  label: "Critiquing",         color: "#ef4444", glow: "shadow-red-500/20" },
   thinking:    { icon: Brain,        label: "Thinking",           color: "#a78bfa", glow: "shadow-purple-500/20" },
   rewriting:   { icon: Sparkles,     label: "Rewriting Query",    color: "#f59e0b", glow: "shadow-amber-500/20" },
   searching:   { icon: Search,       label: "Retrieving",         color: "#3FC9B5", glow: "shadow-teal-500/20" },
@@ -32,6 +36,31 @@ const STEP_CONFIG: Record<string, { icon: any; label: string; color: string; glo
 function EventDetail({ event }: { event: AgentEvent }) {
   const d = event.data
   switch (event.event) {
+    case "orchestrating":
+      return (
+        <div className="mt-1.5 space-y-1">
+          {d.plan && d.plan.map((step: any, idx: number) => (
+            <p key={idx} className="text-[11px] text-zinc-500">
+              <span className="text-zinc-600">{idx + 1}. {step.agent}:</span> {step.task}
+            </p>
+          ))}
+          {d.message && <p className="text-[11px] text-zinc-500">{d.message}</p>}
+        </div>
+      )
+    case "delegating":
+      return (
+        <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-zinc-400">
+          <span className="text-[#9D7CFF]">Orchestrator</span>
+          <motion.div
+             initial={{ x: -2, opacity: 0 }}
+             animate={{ x: 0, opacity: 1 }}
+             transition={{ repeat: Infinity, duration: 1.5 }}
+          >
+             →
+          </motion.div>
+          <span style={{ color: d.target?.color || "#fff" }}>{d.target?.name || "Agent"}</span>
+        </div>
+      )
     case "rewriting":
       return (
         <div className="mt-1.5 space-y-1">
@@ -129,12 +158,20 @@ export default function AgentTimeline({
                 </div>
 
                 <div>
-                  <span
-                    className="font-mono text-[11px] font-medium"
-                    style={{ color: config.color }}
-                  >
-                    {config.label}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="font-mono text-[11px] font-medium"
+                      style={{ color: config.color }}
+                    >
+                      {config.label}
+                    </span>
+                    {event.data.agent && (
+                      <div className="flex items-center gap-1 border border-zinc-800 rounded px-1.5 py-[1px] bg-zinc-900/50">
+                        <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: event.data.agent.color }} />
+                        <span className="text-[9px] text-zinc-400 font-mono">{event.data.agent.name}</span>
+                      </div>
+                    )}
+                  </div>
                   <EventDetail event={event} />
                 </div>
               </motion.div>

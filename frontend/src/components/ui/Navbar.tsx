@@ -11,12 +11,14 @@ import {
   Activity,
   Menu,
   X,
+  Brain,
 } from "lucide-react";
 
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
   { href: "/chat", label: "Chat", icon: MessageSquare },
   { href: "/upload", label: "Upload", icon: Upload },
+  { href: "/agents", label: "Agents", icon: Brain },
   { href: "/dashboard", label: "Dashboard", icon: Activity },
 ] as const;
 

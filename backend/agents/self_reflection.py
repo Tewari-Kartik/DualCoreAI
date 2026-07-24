@@ -1,16 +1,41 @@
+"""
+Critic Agent (evolved from self_reflection)
+Evaluates generated answers for hallucination, relevance, and quality.
+Returns a structured CritiqueResult with pass/fail, feedback, and confidence.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Optional
+
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage
-import os
 
-def check_hallucination_and_relevance(question: str, context: str, answer: str) -> bool:
+
+_grader_llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
+
+
+@dataclass
+class CritiqueResult:
+    passed: bool
+    feedback: str
+    confidence: float   # 0.0–1.0
+
+
+def critique(question: str, context: str, answer: str) -> CritiqueResult:
     """
-    Acts as an internal supervisor. Evaluates if the generated answer is 
-    actually grounded in the documents and answers the user's question.
-    """
-    # We use temperature=0 because we want strict, robotic grading, not creativity
-    grader_llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
+    Evaluate whether the generated answer is grounded in the retrieved context
+    and actually answers the user's question.
     
-    # Inside backend/agents/self_reflection.py
+    Args:
+        question: The original user question.
+        context: The concatenated document chunks used for generation.
+        answer: The generated answer to evaluate.
+    
+    Returns:
+        CritiqueResult with pass/fail verdict, feedback, and confidence score.
+    """
     grading_prompt = f"""You are a lenient but fair quality judge. Your job is to check if the AI answer is reasonable given the context.
     User Question: {question}
     Retrieved Context: {context}
@@ -25,22 +50,36 @@ def check_hallucination_and_relevance(question: str, context: str, answer: str) 
     
     Default to "YES" when in doubt. Reply with ONLY "YES" or "NO".
     """
-    
-    print("Evaluating answer quality...")
-    response = grader_llm.invoke([HumanMessage(content=grading_prompt)])
-    
-    # Clean the response to ensure we just get the boolean logic
-    grade = response.content.strip().upper()
-    
-    if "YES" in grade:
-        print("Grade: PASS (Answer is highly relevant)")
-        return True
-    else:
-        print("Grade: FAIL (Hallucination or irrelevant detected)")
-        return False
-    
 
-def get_improvement_feedback(question, context, answer):
+    print("  [Critic Agent] Evaluating answer quality...")
+    response = _grader_llm.invoke([HumanMessage(content=grading_prompt)])
+    grade = response.content.strip().upper()
+
+    if "YES" in grade:
+        print("  [Critic Agent] Verdict: PASS ✓")
+        return CritiqueResult(
+            passed=True,
+            feedback="Answer is grounded and relevant",
+            confidence=0.95,
+        )
+    else:
+        print("  [Critic Agent] Verdict: FAIL ✗")
+        return CritiqueResult(
+            passed=False,
+            feedback="Hallucination or irrelevance detected — answer not grounded in context",
+            confidence=0.35,
+        )
+
+
+# Legacy interface — kept for backward compatibility
+def check_hallucination_and_relevance(question: str, context: str, answer: str) -> bool:
+    """Legacy interface wrapping critique(). Returns True if passed."""
+    result = critique(question, context, answer)
+    return result.passed
+
+
+def get_improvement_feedback(question: str, context: str, answer: str) -> str:
+    """Generate specific improvement feedback for re-generation."""
     feedback_llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
     prompt = f"The following AI answer was judged as poor. Provide 1 sentence of constructive feedback for the AI to fix it: {answer}. Question: {question}"
     return feedback_llm.invoke([HumanMessage(content=prompt)]).content

@@ -13,7 +13,7 @@ from typing import Any, AsyncGenerator, Dict, List, Optional
 
 @dataclass
 class AgentEvent:
-    event: str          # thinking, rewriting, searching, sources, generating, reflecting, web_search, improving, done, error
+    event: str          # orchestrating, delegating, thinking, rewriting, searching, sources, generating, reflecting, critique, web_search, improving, done, error
     data: Dict[str, Any] = field(default_factory=dict)
     timestamp: float = field(default_factory=time.time)
 
@@ -70,8 +70,14 @@ class AgentEventCollector:
                          confidence=confidence, reflection_loops=reflection_loops,
                          tokens_used=tokens_used)
 
-    def error(self, message: str):
-        return self.emit("error", message=message)
+    def orchestrating(self, message: str, plan: list, agent: dict = None):
+        return self.emit("orchestrating", message=message, plan=plan, agent=agent)
+
+    def delegating(self, target: dict, message: str, agent: dict = None):
+        return self.emit("delegating", target=target, message=message, agent=agent)
+
+    def error(self, message: str, agent: dict = None):
+        return self.emit("error", message=message, agent=agent)
 
     def total_duration_ms(self) -> int:
         return int((time.time() - self._start_time) * 1000)

@@ -58,6 +58,15 @@ export interface UploadedFile {
 
 // --- Agent Event Types ---
 
+// Agent identity metadata from the backend
+export interface AgentInfo {
+  name: string
+  role: string
+  color: string
+  icon: string
+}
+
+
 export type AgentEventType =
   | "thinking"
   | "rewriting"
@@ -67,6 +76,9 @@ export type AgentEventType =
   | "reflecting"
   | "web_search"
   | "improving"
+  | "orchestrating"
+  | "delegating"
+  | "critique"
   | "done"
   | "error"
 
@@ -74,6 +86,9 @@ export interface AgentEvent {
   event: AgentEventType
   data: Record<string, any>
   timestamp: number
+  agent?: AgentInfo
+  target?: AgentInfo
+  plan?: Array<{agent: string, task: string}>
 }
 
 export interface AgentTrace {
