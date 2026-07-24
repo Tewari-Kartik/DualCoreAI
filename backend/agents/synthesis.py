@@ -42,12 +42,16 @@ def synthesize(
     Returns:
         SynthesisResult with the answer and whether web search is needed.
     """
+    # Sanitize context_text to remove null bytes and non-printable characters 
+    # which can trigger Cloudflare/WAF to drop the connection (causing APIConnectionError)
+    safe_context = context_text.replace('\x00', '')
+    
     system_prompt = f"""You are a helpful, intelligent assistant. 
 Answer the user's latest question using the retrieved document chunks provided below.
 If the answer cannot be found in the context, DO NOT attempt to guess. Instead, reply EXACTLY with the phrase "TRIGGER_WEB_SEARCH".
 
 CURRENT RETRIEVED CONTEXT:
-{context_text}"""
+{safe_context}"""
 
     messages = [SystemMessage(content=system_prompt)]
     messages.extend(chat_history[-10:])

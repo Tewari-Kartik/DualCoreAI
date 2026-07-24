@@ -35,9 +35,12 @@ def critique(question: str, context: str, answer: str) -> CritiqueResult:
     Returns:
         CritiqueResult with pass/fail verdict, feedback, and confidence score.
     """
+    # Sanitize to prevent Cloudflare/WAF TCP connection drops due to null bytes from PDFs
+    safe_context = context.replace('\x00', '')
+    
     grading_prompt = f"""You are a lenient but fair quality judge. Your job is to check if the AI answer is reasonable given the context.
     User Question: {question}
-    Retrieved Context: {context}
+    Retrieved Context: {safe_context}
     AI Answer: {answer}
 
     Rules:
