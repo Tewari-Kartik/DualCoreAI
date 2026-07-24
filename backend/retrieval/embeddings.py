@@ -1,5 +1,6 @@
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 
 def get_embeddings():
-    # all-MiniLM-L6-v2 is an incredibly fast and efficient model for local RAG
-    return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    # Using FastEmbed instead of HuggingFaceEmbeddings (PyTorch) to drastically reduce memory usage
+    # This prevents Out-Of-Memory (OOM) errors on platforms like Render's free tier.
+    return FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")

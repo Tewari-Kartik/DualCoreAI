@@ -6,9 +6,8 @@ langchain-community>=0.2.0
 langchain-core>=0.2.0
 langgraph>=0.1.0
 
-# ── Embeddings (HuggingFace) ─────────────────────────────
-sentence-transformers>=3.0.0
-langchain-huggingface>=0.0.3
+# ── Embeddings (FastEmbed / ONNX) ─────────────────────────────
+fastembed>=0.2.0
 
 # ── Vector Stores ────────────────────────────────────────
 faiss-cpu>=1.8.0
