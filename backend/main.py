@@ -1,4 +1,14 @@
 import os
+import socket
+
+# Monkeypatch socket.getaddrinfo to force IPv4 (AF_INET) resolution globally.
+# This prevents httpx APIConnectionErrors in Docker environments where IPv6 routing is broken.
+old_getaddrinfo = socket.getaddrinfo
+def new_getaddrinfo(*args, **kwargs):
+    responses = old_getaddrinfo(*args, **kwargs)
+    return [r for r in responses if r[0] == socket.AF_INET]
+socket.getaddrinfo = new_getaddrinfo
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
