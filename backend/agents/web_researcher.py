@@ -41,6 +41,14 @@ def search_and_answer(query: str, question: str, max_results: int = 3) -> WebSea
         search_tool = TavilySearchResults(max_results=max_results)
         web_results = search_tool.invoke(query)
 
+        if not web_results:
+            return WebSearchResult(
+                answer="I tried to search the live web for an answer, but the search engine returned no results. Please check if your Tavily API key is valid and has credits.",
+                raw_results=[],
+                success=False,
+                error="Empty results from Tavily"
+            )
+
         answer = synthesize_from_web(question, str(web_results))
 
         return WebSearchResult(
