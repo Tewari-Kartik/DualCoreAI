@@ -15,7 +15,17 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 
 
-_TRIGGER_PHRASES = ("trigger_web_search", "i don't have", "not provided", "not mentioned")
+_TRIGGER_PHRASES = (
+    "trigger_web_search", 
+    "i don't have", 
+    "not provided", 
+    "not mentioned",
+    "unable to find",
+    "cannot find",
+    "provided context",
+    "no information",
+    "does not contain"
+)
 
 
 @dataclass
