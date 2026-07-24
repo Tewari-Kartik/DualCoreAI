@@ -13,7 +13,6 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage
 
 
-_grader_llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
 
 
 @dataclass
@@ -52,7 +51,8 @@ def critique(question: str, context: str, answer: str) -> CritiqueResult:
     """
 
     print("  [Critic Agent] Evaluating answer quality...")
-    response = _grader_llm.invoke([HumanMessage(content=grading_prompt)])
+    llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
+    response = llm.invoke([HumanMessage(content=grading_prompt)])
     grade = response.content.strip().upper()
 
     if "YES" in grade:

@@ -14,7 +14,6 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 
-_llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0.2)
 
 _TRIGGER_PHRASES = ("trigger_web_search", "i don't have", "not provided", "not mentioned")
 
@@ -58,7 +57,8 @@ CURRENT RETRIEVED CONTEXT:
     if feedback:
         messages.append(SystemMessage(content=f"CRITICAL FEEDBACK: {feedback}. Correct any factual mistakes and reply strictly utilizing the context chunks."))
 
-    ai_response = _llm.invoke(messages)
+    llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0.2)
+    ai_response = llm.invoke(messages)
     answer = ai_response.content
 
     # Check if the LLM signaled that documents lack coverage
@@ -83,4 +83,5 @@ LIVE WEB RESULTS:
 {web_results}"""),
         HumanMessage(content=question),
     ]
-    return _llm.invoke(messages).content
+    llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0.2)
+    return llm.invoke(messages).content

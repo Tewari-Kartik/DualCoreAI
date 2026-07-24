@@ -13,7 +13,6 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage
 
 
-_rewriter_llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
 
 
 @dataclass
@@ -66,7 +65,8 @@ def analyze_query(current_message: str, chat_history: list) -> QueryAnalysisResu
     """
 
     print("  [Query Analyst] Rewriting query based on conversation context...")
-    response = _rewriter_llm.invoke([HumanMessage(content=prompt)])
+    llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
+    response = llm.invoke([HumanMessage(content=prompt)])
     optimized_query = response.content.strip()
     print(f"  [Query Analyst] Optimized: '{optimized_query}'")
 
