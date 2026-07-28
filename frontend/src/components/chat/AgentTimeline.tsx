@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Brain,
@@ -108,7 +109,33 @@ export default function AgentTimeline({
   events: AgentEvent[]
   isStreaming: boolean
 }) {
+  const [now, setNow] = useState(Date.now())
+  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set())
+  const [userToggled, setUserToggled] = useState<Set<number>>(new Set())
+
+  useEffect(() => {
+    if (!isStreaming) return
+    const interval = setInterval(() => setNow(Date.now()), 100)
+    return () => clearInterval(interval)
+  }, [isStreaming])
+
   if (events.length === 0 && !isStreaming) return null
+
+  const getIsExpanded = (i: number) => {
+    if (userToggled.has(i)) return expandedSteps.has(i)
+    return i >= events.length - 2
+  }
+
+  const toggleStep = (i: number) => {
+    const currentlyExpanded = getIsExpanded(i)
+    setUserToggled((prev) => new Set(prev).add(i))
+    setExpandedSteps((prev) => {
+      const next = new Set(prev)
+      if (currentlyExpanded) next.delete(i)
+      else next.add(i)
+      return next
+    })
+  }
 
   return (
     <div className="flex flex-col gap-0.5">
@@ -129,6 +156,16 @@ export default function AgentTimeline({
             const Icon = config.icon
             const isLast = i === events.length - 1
             const isActive = isLast && isStreaming && event.event !== "done"
+            const isExpanded = getIsExpanded(i)
+            
+            let durationMs = 0
+            const nextEvent = events[i + 1]
+            if (nextEvent && nextEvent.timestamp && event.timestamp) {
+              durationMs = nextEvent.timestamp - event.timestamp
+            } else if (isActive && event.timestamp) {
+              durationMs = Math.max(0, now - event.timestamp)
+            }
+            const durationStr = durationMs > 0 ? `${(durationMs / 1000).toFixed(1)}s` : null
 
             return (
               <motion.div
@@ -142,37 +179,49 @@ export default function AgentTimeline({
                 <div
                   className={`absolute -left-[21px] top-0.5 flex h-4 w-4 items-center justify-center rounded-full border ${
                     isActive
-                      ? "border-purple-500/50 bg-purple-500/20"
+                      ? `animate-pulse shadow-sm ${config.glow}`
                       : event.event === "error"
                       ? "border-red-500/40 bg-red-500/10"
                       : event.event === "done"
                       ? "border-emerald-500/40 bg-emerald-500/10"
                       : "border-zinc-700 bg-zinc-800/80"
                   }`}
+                  style={isActive ? { borderColor: config.color, backgroundColor: `${config.color}20` } : {}}
                 >
                   {isActive ? (
-                    <Loader2 className="h-2.5 w-2.5 animate-spin" style={{ color: config.color }} />
+                    <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: config.color }} />
                   ) : (
                     <Icon className="h-2.5 w-2.5" style={{ color: config.color }} />
                   )}
                 </div>
 
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div 
+                    className="flex items-center gap-2 cursor-pointer select-none" 
+                    onClick={() => toggleStep(i)}
+                  >
+                    <span className="text-[10px] text-zinc-500 w-2 text-center">
+                      {isExpanded ? '▾' : '▸'}
+                    </span>
                     <span
                       className="font-mono text-[11px] font-medium"
                       style={{ color: config.color }}
                     >
                       {config.label}
                     </span>
+                    {durationStr && (
+                      <span className="text-[10px] text-zinc-600 font-mono">
+                        · {durationStr}
+                      </span>
+                    )}
                     {event.data.agent && (
-                      <div className="flex items-center gap-1 border border-zinc-800 rounded px-1.5 py-[1px] bg-zinc-900/50">
+                      <div className="flex items-center gap-1 border border-zinc-800 rounded px-1.5 py-[1px] bg-zinc-900/50 ml-1">
                         <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: event.data.agent.color }} />
                         <span className="text-[9px] text-zinc-400 font-mono">{event.data.agent.name}</span>
                       </div>
                     )}
                   </div>
-                  <EventDetail event={event} />
+                  {isExpanded && <EventDetail event={event} />}
                 </div>
               </motion.div>
             )

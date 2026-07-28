@@ -32,8 +32,18 @@ function SourceCard({ file, score, preview, method }: SourceCardProps) {
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-zinc-800/40"
       >
-        <FileText className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
-        <span className="min-w-0 flex-1 truncate text-xs text-zinc-300">{file}</span>
+        <FileText
+          className={`h-3.5 w-3.5 shrink-0 ${
+            file.endsWith(".pdf")
+              ? "text-red-400/60"
+              : file.endsWith(".docx")
+              ? "text-blue-400/60"
+              : file.endsWith(".txt")
+              ? "text-zinc-400/60"
+              : "text-zinc-500"
+          }`}
+        />
+        <span className="min-w-0 flex-1 break-all text-xs text-zinc-300">{file}</span>
 
         {/* Method badge */}
         <span
@@ -44,7 +54,7 @@ function SourceCard({ file, score, preview, method }: SourceCardProps) {
         </span>
 
         {/* Score bar */}
-        <div className="flex w-12 shrink-0 items-center gap-1">
+        <div className="flex w-20 shrink-0 items-center gap-1">
           <div className="h-1 flex-1 overflow-hidden rounded-full bg-zinc-800">
             <div
               className="h-full rounded-full"
@@ -55,6 +65,7 @@ function SourceCard({ file, score, preview, method }: SourceCardProps) {
             />
           </div>
         </div>
+        <span className="font-mono text-[9px] text-zinc-500">{Math.round(score * 100)}%</span>
 
         <ChevronDown
           className={`h-3 w-3 shrink-0 text-zinc-600 transition-transform ${open ? "rotate-180" : ""}`}

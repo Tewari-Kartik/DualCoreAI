@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import Link from "next/link"
-import { motion } from "motion/react"
+import { motion } from "framer-motion"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import {
@@ -160,7 +160,7 @@ const COMPARISON = [
 const STATS = [
   { value: "2×", label: "retrieval engines", accent: "#9D7CFF" },
   { value: "RRF", label: "rank fusion", accent: "#3FC9B5" },
-  { value: "4", label: "AI agents", accent: "#f59e0b" },
+  { value: "6", label: "AI agents", accent: "#f59e0b" },
   { value: "∞", label: "session memory", accent: "#E8A33D" },
 ]
 

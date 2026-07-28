@@ -59,14 +59,14 @@ def critique(question: str, context: str, answer: str) -> CritiqueResult:
     grade = response.content.strip().upper()
 
     if "YES" in grade:
-        print("  [Critic Agent] Verdict: PASS ✓")
+        print("  [Critic Agent] Verdict: PASS [OK]")
         return CritiqueResult(
             passed=True,
             feedback="Answer is grounded and relevant",
             confidence=0.95,
         )
     else:
-        print("  [Critic Agent] Verdict: FAIL ✗")
+        print("  [Critic Agent] Verdict: FAIL [X]")
         return CritiqueResult(
             passed=False,
             feedback="Hallucination or irrelevance detected — answer not grounded in context",

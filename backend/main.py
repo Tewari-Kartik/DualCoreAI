@@ -1,5 +1,8 @@
 import os
 import socket
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Sanitize API keys to remove accidental trailing newlines (fixes httpcore.LocalProtocolError)
 if "GROQ_API_KEY" in os.environ:

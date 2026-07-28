@@ -1,6 +1,6 @@
 import type { AgentEvent, AgentLogsResponse, SessionListResponse } from "../types"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8080"
 const BASE = `${BASE_URL}/api`
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -26,12 +26,14 @@ export const api = {
   chatStream: async function* (
     sessionId: string,
     message: string,
-    mode = "auto"
+    mode = "auto",
+    abortSignal?: AbortSignal
   ): AsyncGenerator<AgentEvent> {
     const res = await fetch(`${BASE}/chat/stream`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ session_id: sessionId, message, mode }),
+      signal: abortSignal,
     })
 
     if (!res.ok || !res.body) {

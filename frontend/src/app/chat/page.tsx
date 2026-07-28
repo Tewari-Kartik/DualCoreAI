@@ -7,10 +7,8 @@ import {
   Send, Bot, User, Sparkles, Database, Zap, Search, Copy, Check,
   ChevronDown, Square, PanelRightOpen, PanelRightClose, Brain,
 } from "lucide-react"
-import { AnimatedBackground } from "../../components/ui/animated-background"
 import AgentTimeline from "../../components/chat/AgentTimeline"
 import SourceCards from "../../components/chat/SourceCards"
-import ConfidenceBadge from "../../components/chat/ConfidenceBadge"
 import { api } from "../../lib/api"
 import type { AgentEvent } from "../../types"
 
@@ -57,6 +55,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const modeMenuRef = useRef<HTMLDivElement>(null)
+  const abortController = useRef<AbortController | null>(null)
 
   useEffect(() => {
     setSessionId(crypto.randomUUID())
@@ -100,6 +99,7 @@ export default function ChatPage() {
     setIsStreaming(true)
     setLiveEvents([])
     setShowPanel(true)
+    abortController.current = new AbortController()
 
     let finalAnswer = ""
     let finalConfidence = 0
@@ -109,7 +109,7 @@ export default function ChatPage() {
     let collectedSources: Array<{ file: string; score: number; preview: string; method?: string }> = []
 
     try {
-      for await (const event of api.chatStream(sessionId, textToSend, mode)) {
+      for await (const event of api.chatStream(sessionId, textToSend, mode, abortController.current.signal)) {
         collectedEvents = [...collectedEvents, event]
         setLiveEvents([...collectedEvents])
 
@@ -168,7 +168,11 @@ export default function ChatPage() {
 
   return (
     <div className="relative flex h-screen bg-[#0a0a0c] font-sans text-zinc-100 selection:bg-purple-500/30">
-      <AnimatedBackground />
+      {/* Background Gradients */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-50">
+        <div className="absolute -left-[10%] -top-[10%] h-[50%] w-[50%] rounded-full bg-purple-600/10 mix-blend-screen blur-[120px]" />
+        <div className="absolute -bottom-[10%] -right-[10%] h-[50%] w-[50%] rounded-full bg-teal-600/10 mix-blend-screen blur-[120px]" />
+      </div>
 
       {/* Main chat column */}
       <div className="z-10 flex min-h-0 flex-1 flex-col">
@@ -261,8 +265,8 @@ export default function ChatPage() {
                   <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-purple-500/20 bg-gradient-to-tr from-purple-500/20 to-blue-500/20 shadow-xl shadow-purple-900/10">
                     <Sparkles className="text-purple-400" size={32} />
                   </div>
-                  <h2 className="mb-2 text-2xl font-semibold text-balance text-zinc-100">How can I help you today?</h2>
-                  <p className="mb-8 text-zinc-500">Ask a question or try a starting prompt below.</p>
+                  <h2 className="mb-2 text-2xl font-semibold text-balance text-zinc-100">What would you like to know?</h2>
+                  <p className="mb-8 text-zinc-500">Ask questions about your uploaded documents. The AI will search, reason, and verify before responding.</p>
 
                   <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
                     {STARTER_PROMPTS.map((prompt, i) => (
@@ -299,14 +303,32 @@ export default function ChatPage() {
                 )}
 
                 <div className="flex max-w-[80%] flex-col gap-1.5">
+                  {/* Inline Agent Timeline (Mobile only) */}
+                  {msg.role === "ai" && msg.agentEvents && msg.agentEvents.length > 0 && (
+                    <div className="mb-1 block w-full lg:hidden">
+                      <details className="group/timeline rounded-lg border border-zinc-800/80 bg-zinc-900/50">
+                        <summary className="flex cursor-pointer items-center justify-between p-3 text-xs text-zinc-400 hover:text-zinc-300">
+                          <span className="flex items-center gap-2">
+                            <Brain size={14} className="text-purple-400" />
+                            Show agent reasoning
+                          </span>
+                          <ChevronDown size={14} className="transition-transform group-open/timeline:rotate-180" />
+                        </summary>
+                        <div className="border-t border-zinc-800/80 p-3 pt-4 max-h-[300px] overflow-y-auto">
+                          <AgentTimeline events={msg.agentEvents} isStreaming={false} />
+                        </div>
+                      </details>
+                    </div>
+                  )}
+
                   <div
                     className={`group relative rounded-2xl p-4 leading-relaxed shadow-sm backdrop-blur-sm ${
                       msg.role === "user"
-                        ? "rounded-tr-sm bg-gradient-to-br from-blue-600 to-blue-700 text-white"
+                        ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-indigo-700 text-white"
                         : "rounded-tl-sm border border-zinc-800/80 bg-zinc-900/80 text-zinc-200"
                     }`}
                   >
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                    <div className={`whitespace-pre-wrap ${msg.role === "ai" ? "animate-[fadeIn_0.4s_ease-out]" : ""}`}>{msg.content}</div>
 
                     {msg.role === "ai" && (
                       <button
@@ -320,17 +342,18 @@ export default function ChatPage() {
 
                     {msg.role === "ai" && msg.mode && (
                       <div className="mt-3 flex items-center gap-2 border-t border-zinc-800/50 pt-3 font-mono text-[11px] text-zinc-500">
-                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-500/60" />
-                        Engine: {msg.mode}
+                        <span className="h-1.5 w-1.5 rounded-full bg-purple-500/60" />
+                        {msg.confidence !== undefined && msg.confidence > 0 
+                          ? `✓ ${msg.confidence}% confidence · ${msg.reflectionLoops} loops · ${msg.mode}` 
+                          : `Engine: ${msg.mode}`}
                       </div>
                     )}
                   </div>
 
-                  {/* Confidence + Sources */}
-                  {msg.role === "ai" && msg.confidence !== undefined && msg.confidence > 0 && (
+                  {/* Sources */}
+                  {msg.role === "ai" && msg.sources && msg.sources.length > 0 && (
                     <div className="flex flex-col gap-2 pt-1">
-                      <ConfidenceBadge confidence={msg.confidence} reflectionLoops={msg.reflectionLoops} />
-                      {msg.sources && msg.sources.length > 0 && <SourceCards sources={msg.sources} />}
+                      <SourceCards sources={msg.sources} />
                     </div>
                   )}
 
@@ -342,8 +365,8 @@ export default function ChatPage() {
                 </div>
 
                 {msg.role === "user" && (
-                  <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-700/50 bg-blue-900/50">
-                    <User size={16} className="text-blue-400" />
+                  <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-violet-700/50 bg-violet-900/50">
+                    <User size={16} className="text-violet-400" />
                   </div>
                 )}
               </motion.div>
@@ -361,10 +384,35 @@ export default function ChatPage() {
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-700 bg-zinc-800">
                     <Bot size={16} className="text-purple-400" />
                   </div>
-                  <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-sm border border-zinc-800/80 bg-zinc-900/80 p-4 backdrop-blur-sm">
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.3s]" />
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.15s]" />
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-500" />
+                  <div className="flex max-w-[80%] flex-col gap-1.5">
+                    {/* Live Inline Agent Timeline (Mobile only) */}
+                    {liveEvents.length > 0 && (
+                      <div className="mb-1 block w-full lg:hidden">
+                        <details open className="group/timeline rounded-lg border border-zinc-800/80 bg-zinc-900/50">
+                          <summary className="flex cursor-pointer items-center justify-between p-3 text-xs text-zinc-400 hover:text-zinc-300">
+                            <span className="flex items-center gap-2">
+                              <Brain size={14} className="text-purple-400" />
+                              <span className="flex items-center gap-2">
+                                Agent reasoning
+                                <span className="flex items-center gap-1.5 rounded-full bg-purple-500/10 px-2 py-0.5">
+                                  <span className="h-1 w-1 animate-pulse rounded-full bg-purple-400" />
+                                  <span className="text-[10px] text-purple-400">Live</span>
+                                </span>
+                              </span>
+                            </span>
+                            <ChevronDown size={14} className="transition-transform group-open/timeline:rotate-180" />
+                          </summary>
+                          <div className="border-t border-zinc-800/80 p-3 pt-4 max-h-[300px] overflow-y-auto">
+                            <AgentTimeline events={liveEvents} isStreaming={true} />
+                          </div>
+                        </details>
+                      </div>
+                    )}
+                    <div className="w-fit flex items-center gap-1.5 rounded-2xl rounded-tl-sm border border-zinc-800/80 bg-zinc-900/80 p-4 backdrop-blur-sm">
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.3s]" />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.15s]" />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-500" />
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -393,19 +441,20 @@ export default function ChatPage() {
                 placeholder="Message Neural Chat..."
               />
               <button
-                onClick={() => handleSend()}
-                disabled={loading || !input.trim()}
-                aria-label="Send message"
+                onClick={() => {
+                  if (loading) {
+                    abortController.current?.abort()
+                  } else {
+                    handleSend()
+                  }
+                }}
+                disabled={!loading && !input.trim()}
+                aria-label={loading ? "Stop generating" : "Send message"}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-900 transition-all hover:bg-white disabled:bg-zinc-800 disabled:text-zinc-500"
               >
                 {loading ? <Square size={16} className="fill-current" /> : <Send size={18} />}
               </button>
             </div>
-            <p className="mt-3 text-center text-xs font-medium text-zinc-600">
-              Press <kbd className="rounded bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">Enter</kbd> to
-              send, <kbd className="rounded bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">Shift+Enter</kbd>{" "}
-              for a new line. AI can make mistakes.
-            </p>
           </div>
         </div>
       </div>
